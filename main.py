@@ -6,7 +6,7 @@ def main(argv):
     image_array = []
     os.getcwd()
 
-    for file in os.listdir("/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/category_database/test_images"):
+    for file in os.listdir("/Users/Tuchman/Dropbox/BC/Fall16/Algorithms/Unsupervised_Image_Clustering"):
         x = Image(os.getcwd()+"/category_database/test_images/"+file)
         image_array.append(x)
     print image_array
@@ -14,7 +14,6 @@ def main(argv):
     #databasePath = argv[2]
     #k = argv[3]
     #os.listdir("somedirectory")
-
     #query_images = readImages(queryPath)
     #database_images = readImages(databasePath)
     #return output_array

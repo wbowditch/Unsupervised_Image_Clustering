@@ -10,8 +10,8 @@ class Image(object):
         self.size = len(self.matrix)*len(self.matrix[0])
 
 
-    def _create_matrix(name):
-        file = open("test_images/"+name+".txt",'r')
+    def _create_matrix(self):
+        file = open("test_images/"+self+".txt",'r')
         array = []
         for line in file:
             array.append([int(x) for x in line.split(" ")])
