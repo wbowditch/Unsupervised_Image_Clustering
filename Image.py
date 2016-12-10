@@ -11,7 +11,7 @@ class Image(object):
 
 
     def _create_matrix(self):
-        file = open("test_images/"+self+".txt",'r')
+        file = open("test/"+self+".txt",'r')
         array = []
         for line in file:
             array.append([int(x) for x in line.split(" ")])
@@ -48,9 +48,6 @@ class Image(object):
 
         return c_,r_
 
-
-# x = xcostheta y sin theta
-
     def axis_of_least_second_movement(self):
         a = 0.0
         b = 0.0
@@ -73,3 +70,23 @@ class Image(object):
                     shared+=1
         return shared/self.size
 
+    def four_corners(self):
+        corners = []
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self.matrix[r][c] == 1:
+                    corners.append([r,c])#north
+                    break
+        for r in range(self.rows, 0, -1):
+            for c in range (self.cols, 0, -1):
+                if self.matrix[r][c] == 1:
+                    corners.append([r,c])#south
+        for c in range(self.cols, 0, -1):
+            for r in range (self.rows, 0, -1):
+                if self.matrix[r][c] == 1:
+                    corners.append([c,r])#east
+        for c in range(self.cols):
+            for r in range (self.rows):
+                if self.matrix[r][c] == 1:
+                    corners.append([r,c])#west
+        return dict
