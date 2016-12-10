@@ -49,6 +49,7 @@ class Image(object):
         return c_,r_
 
 
+# x = xcostheta y sin theta
 
     def axis_of_least_second_movement(self):
         a = 0.0
