@@ -44,9 +44,10 @@ def generate_chessboard_symmetry(file_num,confidence):
         file.write(line + '\n')
     file.close()
 
-
 for x in range(int(sys.argv[1])):
     generate_chessboard_symmetry(x,float(sys.argv[2]))
+
+
 
 
 
