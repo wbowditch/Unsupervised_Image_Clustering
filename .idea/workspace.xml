@@ -3,6 +3,21 @@
   <component name="ChangeListManager">
     <list default="true" id="9c07d3a9-e345-45ac-a372-0546c4a9c9e5" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.0.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.0.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.1.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.1.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.10.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.10.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.11.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.11.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.12.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.12.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.13.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.13.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.14.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.14.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.2.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.2.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.3.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.3.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.4.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.4.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.5.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.5.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.6.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.6.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.7.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.7.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.8.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.8.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.9.txt" afterPath="$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.9.txt" />
     </list>
     <ignored path="Unsupervised_Image_Clustering.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -16,7 +31,7 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/Unsupervised_Image_Clustering$main.coverage" NAME="main Coverage Results" MODIFIED="1481404382807" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Unsupervised_Image_Clustering$messingAround.coverage" NAME="messingAround Coverage Results" MODIFIED="1481416079931" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Unsupervised_Image_Clustering$messingAround.coverage" NAME="messingAround Coverage Results" MODIFIED="1481416822491" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Unsupervised_Image_Clustering$feature_extraction.coverage" NAME="feature_extraction Coverage Results" MODIFIED="1481399526866" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
@@ -38,11 +53,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="messingAround.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="messingAround.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/messingAround.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="27" column="0" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
+            <state relative-caret-position="334">
+              <caret line="26" column="35" selection-start-line="26" selection-start-column="35" selection-end-line="26" selection-end-column="35" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
@@ -50,11 +65,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="blurredTwo.0.0.txt" pinned="false" current-in-tab="false">
+      <file leaf-file-name="blurredTwo.0.0.txt" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.0.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="345">
+              <caret line="23" column="55" selection-start-line="23" selection-start-column="55" selection-end-line="23" selection-end-column="55" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Image.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Image.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="454">
+              <caret line="84" column="39" selection-start-line="84" selection-start-column="39" selection-end-line="84" selection-end-column="39" />
               <folding />
             </state>
           </provider>
@@ -70,22 +95,14 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="blurredTwo.0.2.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.2.txt">
+      <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="blurredTwo.0.3.txt" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.3.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="225">
+              <caret line="15" column="30" selection-start-line="15" selection-start-column="30" selection-end-line="15" selection-end-column="30" />
+              <folding>
+                <element signature="e#0#10#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -244,6 +261,28 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Unsupervised_Image_Clustering" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Unsupervised_Image_Clustering" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="category_database" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="newDirectory" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -701,7 +740,21 @@
       <option name="project" value="LOCAL" />
       <updated>1481416299010</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="added distorted images">
+      <created>1481416318801</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1481416318801</updated>
+    </task>
+    <task id="LOCAL-00007" summary="updated distorted images">
+      <created>1481416603680</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1481416603680</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TodoView">
@@ -737,6 +790,9 @@
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.md" />
+  </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
       <collection />
@@ -753,7 +809,9 @@
     <MESSAGE value="new changes to main function to create arrays of images from command line args" />
     <MESSAGE value="added self to matrix" />
     <MESSAGE value="four corners function" />
-    <option name="LAST_COMMIT_MESSAGE" value="four corners function" />
+    <MESSAGE value="added distorted images" />
+    <MESSAGE value="updated distorted images" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated distorted images" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1024,67 +1082,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="30" selection-start-line="15" selection-start-column="30" selection-end-line="15" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Image.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1215">
-          <caret line="84" column="39" selection-start-line="84" selection-start-column="39" selection-end-line="84" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="31" selection-start-line="0" selection-start-column="31" selection-end-line="0" selection-end-column="31" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/twos/two0.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="14" column="23" selection-start-line="14" selection-start-column="23" selection-end-line="14" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/category_database/generate_database.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="14" column="70" selection-start-line="14" selection-start-column="70" selection-end-line="14" selection-end-column="70" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/feature_extraction.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="10" column="12" selection-start-line="10" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.1.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -1116,7 +1114,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.0.txt">
+    <entry file="file://$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.1.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -1124,13 +1122,73 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="31" selection-start-line="0" selection-start-column="31" selection-end-line="0" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/category_database/generate_database.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="14" column="70" selection-start-line="14" selection-start-column="70" selection-end-line="14" selection-end-column="70" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" column="23" selection-start-line="14" selection-start-column="23" selection-end-line="14" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/feature_extraction.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="12" selection-start-line="10" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Image.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="454">
+          <caret line="84" column="39" selection-start-line="84" selection-start-column="39" selection-end-line="84" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" column="30" selection-start-line="15" selection-start-column="30" selection-end-line="15" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/messingAround.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="27" column="0" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
+        <state relative-caret-position="334">
+          <caret line="26" column="35" selection-start-line="26" selection-start-column="35" selection-end-line="26" selection-end-column="35" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/category_database/test/newDirectory/blurredTwo.0.0.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="23" column="55" selection-start-line="23" selection-start-column="55" selection-end-line="23" selection-end-column="55" />
+          <folding />
         </state>
       </provider>
     </entry>
