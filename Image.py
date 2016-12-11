@@ -134,20 +134,20 @@ class Image(object):
         for i in range (self.rows):
             for j in range (self.cols):
                 if self.matrix[i][j] == 1:
-                    self.north = [i,j]
+                    self.north = np.array([i,j])
                     break
         for i in range (self.cols):
             for j in range (self.rows):
                 if self.matrix[i][j] == 1:
-                    self.west = [i,j]
+                    self.west = np.array([i,j])
                     break
         for i in range (self.rows, 0, -1):
             for j in range(self.cols, 0. -1):
                 if self.matrix[i][j] == 1:
-                    self.south = [i,j]
+                    self.south = np.array([i,j])
                     break
         for i in range (self.cols, 0, -1):
             for j in range (self.rows, 0, -1):
                 if self.matrix[i][j] == 1:
-                    self.east = [i,j]
+                    self.east = np.array([i,j])
                     break
