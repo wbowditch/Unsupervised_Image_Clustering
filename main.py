@@ -19,22 +19,34 @@ def main(argv):
         image_array.append(x)
     #print image_array
 
-
+    index = 0
     for image in image_array:
-        a = image.matrix
-        print a
-        #print
-        #flip_ud_face = np.flipud(a)
-        #print flip_ud_fa
-        print
-        #blurred = image.mean_average_blur(alpha = 2)
+        file = open("threes_out/"+str(index)+".txt",'w')
+
+        # a = image.matrix
+        # print a
+        # #print
+        # #flip_ud_face = np.flipud(a)
+        # #print flip_ud_fa
+        # print
+        # #blurred = image.mean_average_blur(alpha = 2)
         rads = image.axis_of_least_second_movement()
-        #print blurred
+        # #print blurred
+        a = image.matrix
         rotate_face = ndimage.rotate(a, -math.degrees(rads),reshape=False)
-        print rotate_face
-        print
-        print
-        print
+        for line in rotate_face:
+            x = ' '.join([str(x) for x in line])
+            file.write(x + '\n')
+        file.close()
+        index+=1
+        print index
+        if index>20:
+            break
+
+        #print rotate_face
+        # print
+        # print
+        # print
     #face = misc.face(gray=True)
     #a = np.array(image1)
 

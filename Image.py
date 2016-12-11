@@ -8,8 +8,8 @@ class Image(object):
         self.rows = rows if rows !=0 else len(self.matrix)
         self.cols = cols if cols !=0 else len(self.matrix[0])
         self.size = len(self.matrix)*len(self.matrix[0])
-        print self.matrix
-        self.matrix = self.mean_average_blur()
+        #print self.matrix
+        #self.matrix = self.mean_average_blur()
 
     def _create_matrix(self,name):
         file = open(name,'r')
