@@ -8,11 +8,17 @@ class Image(object):
         self.rows = rows if rows !=0 else len(self.matrix)
         self.cols = cols if cols !=0 else len(self.matrix[0])
         self.size = len(self.matrix)*len(self.matrix[0])
+        self.corners = self.cornerDetector()
+        self.blurred_image = self.mean_average_blur()
+        self.area = self.area()
+        self.theta = self.axis_of_least_second_movement()
+        self.x_scale = self.x_scale_factor()
+        self.y_scale = self.y_scale_factor()
         #self.four_corners()
-        self.north = self.north()
-        self.south = self.south()
-        self.east = self.east()
-        self.west = self.west()
+        # self.north = self.north()
+        # self.south = self.south()
+        # self.east = self.east()
+        # self.west = self.west()
         #print self.matrix
         #self.matrix = self.mean_average_blur()
 
@@ -54,8 +60,13 @@ class Image(object):
         # print
         # return self.matrix[x-s:x+s][y-s:y+s]
 
+    def invert_matrix(self):
+        if float(self.area)/self.size >= .5:
+            self.inverted_matrix = 1-self.matrix
 
-    def mean_average_blur(self,alpha = 10):
+
+    #gaussian filter
+    def mean_average_blur(self):
         image_array = self.matrix
         image_output = image_array.copy()
         height=len(image_array)
@@ -317,8 +328,11 @@ class Image(object):
 
         return image_out
 
+    def y_scale_factor(self):
+        return 1.
 
-
+    def x_scale_factor(self):
+        return 1.
 
 
 
