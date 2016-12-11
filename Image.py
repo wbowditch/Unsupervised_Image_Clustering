@@ -8,8 +8,8 @@ class Image(object):
         self.rows = rows if rows !=0 else len(self.matrix)
         self.cols = cols if cols !=0 else len(self.matrix[0])
         self.size = len(self.matrix)*len(self.matrix[0])
-        self.corners = self.cornerDetector()
         self.blurred_image = self.mean_average_blur()
+        self.corners = self.cornerDetector()
         self.area = self.area()
         self.theta = self.axis_of_least_second_movement()
         self.x_scale = self.x_scale_factor()
@@ -289,7 +289,7 @@ class Image(object):
 
     def cornerDetector(self):
         corners = []
-        image_array = self.matrix
+        image_array = self.blurred_image
         rows = self.rows
         cols = self.cols
         for i in range(rows):
@@ -299,7 +299,6 @@ class Image(object):
                     #print neighbors
                     if neighbors.count(0)>4:
                         corners.append((i,j))
-
         return corners
 
 
