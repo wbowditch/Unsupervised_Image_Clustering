@@ -17,12 +17,12 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir("/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/database"):
+    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/database"):
         print file
         x = Image("database/"+file)
         database.append(x)
 
-    for file in os.listdir("/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/queries"):
+    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/queries"):
         print file
         x = Image("queries/"+file)
         queries.append(x)
@@ -39,7 +39,7 @@ def main(argv):
         print "Corner Count", len(image.corners)
         print "Corners Group Count",len(image.grouped_corners)
         print "Corner Groups",image.grouped_corners
-        print
+        print "Distnaces:"+"\n", image.distances()
         print
         print
         print
@@ -55,7 +55,7 @@ def main(argv):
         print "Corner Count", len(image.corners)
         print "Corners Group Count",len(image.grouped_corners)
         print "Corner Groups",image.grouped_corners
-        print
+        print "Distnaces:"+"\n", image.distances()
         print
         print
         print
