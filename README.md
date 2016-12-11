@@ -6,3 +6,6 @@
 # TODO: 5) If(east-west)^2 > (north-south) then transpose (zip in python)
 
 # TODO: add more steps to alg
+
+final conversions:
+rotation theta to vertical

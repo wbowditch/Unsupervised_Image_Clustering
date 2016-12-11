@@ -8,6 +8,9 @@ class Image(object):
         self.rows = rows if rows !=0 else len(self.matrix)
         self.cols = cols if cols !=0 else len(self.matrix[0])
         self.size = len(self.matrix)*len(self.matrix[0])
+        self.quadrants = []
+        self.theta = 1.
+        self.scale = 1.
         #print self.matrix
         #self.matrix = self.mean_average_blur()
 
@@ -48,7 +51,7 @@ class Image(object):
         # print
         # return self.matrix[x-s:x+s][y-s:y+s]
 
-
+    #blur filter
     def mean_average_blur(self,alpha = 10):
         image_array = self.matrix
         image_output = image_array.copy()
@@ -84,11 +87,7 @@ class Image(object):
         return self.cols
 
     def area(self):
-        area = 0
-        for r in range(self.rows):
-            for c in range(self.cols):
-                area+= self.matrix[r][c]
-        return area
+        return np.sum(self.matrix)
 
 
     def center_of_area(self):
@@ -130,3 +129,25 @@ class Image(object):
                     shared+=1
         return shared/self.size
 
+    def four_corners(self):
+        return_array = []
+        for i in range (self.rows):
+            for j in range (self.cols):
+                if self.matrix[i][j] == 1:
+                    return_array.append([i,j])#north
+                    break
+        for i in range (self.cols):
+            for j in range (self.rows):
+                if self.matrix[i][j] == 1:
+                    return_array.append([i,j])#west
+                    break
+        for i in range (self.rows, 0, -1):
+            for j in range(self.cols, 0. -1):
+                if self.matrix[i][j] == 1:
+                    return_array.append([i,j])#south
+                    break
+        for i in range (self.cols, 0, -1):
+            for j in range (self.rows, 0, -1):
+                if self.matrix[i][j] == 1:
+                    return_array.append([i,j])#east
+                    break
