@@ -8,10 +8,9 @@ class Image(object):
         self.rows = rows if rows !=0 else len(self.matrix)
         self.cols = cols if cols !=0 else len(self.matrix[0])
         self.size = len(self.matrix)*len(self.matrix[0])
-        self.quadrants = []
-        self.theta = 1.
-        self.scale = 1.
         #print self.matrix
+        #self.scale
+        #self.quadrants
         #self.matrix = self.mean_average_blur()
 
     def _create_matrix(self,name):
@@ -135,20 +134,20 @@ class Image(object):
         for i in range (self.rows):
             for j in range (self.cols):
                 if self.matrix[i][j] == 1:
-                    return_array.append([i,j])#north
+                    self.north = [i,j]
                     break
         for i in range (self.cols):
             for j in range (self.rows):
                 if self.matrix[i][j] == 1:
-                    return_array.append([i,j])#west
+                    self.west = [i,j]
                     break
         for i in range (self.rows, 0, -1):
             for j in range(self.cols, 0. -1):
                 if self.matrix[i][j] == 1:
-                    return_array.append([i,j])#south
+                    self.south = [i,j]
                     break
         for i in range (self.cols, 0, -1):
             for j in range (self.rows, 0, -1):
                 if self.matrix[i][j] == 1:
-                    return_array.append([i,j])#east
+                    self.east = [i,j]
                     break
