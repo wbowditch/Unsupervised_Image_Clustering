@@ -9,6 +9,8 @@ import numpy as np
 #from scipy.ndimage.filters import gaussian_filter
 from scipy import ndimage
 
+
+"""  when you find the image and are trying ot scale it, you calculate the four corners and then find a buffer such that the array is square """
 def main(argv):
     print argv
     image_array = []
