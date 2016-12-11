@@ -16,34 +16,44 @@ def main(argv):
     image_array = []
     os.getcwd()
 
-    for file in os.listdir("/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/category_database/threes"):
-        x = Image(os.getcwd()+"/category_database/threes/"+file)
+    for file in os.listdir("/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/threes_out"):
+        #print file
+        x = Image(os.getcwd()+"/threes_out/"+file)
         image_array.append(x)
+    i = 0
+    for image in image_array:
+        print i
+        print image.matrix
+        print
+        a = image.scale(2,2)
+        print a
+        np.savetxt("threes_scaled/"+str(i)+".txt",a.astype(int),fmt="%d")
+        i+=1
     #print image_array
 
-    index = 0
-    for image in image_array:
-        file = open("threes_out/"+str(index)+".txt",'w')
-
-        # a = image.matrix
-        # print a
-        # #print
-        # #flip_ud_face = np.flipud(a)
-        # #print flip_ud_fa
-        # print
-        # #blurred = image.mean_average_blur(alpha = 2)
-        rads = image.axis_of_least_second_movement()
-        # #print blurred
-        a = image.matrix
-        rotate_face = ndimage.rotate(a, -math.degrees(rads),reshape=False)
-        for line in rotate_face:
-            x = ' '.join([str(x) for x in line])
-            file.write(x + '\n')
-        file.close()
-        index+=1
-        print index
-        if index>20:
-            break
+    # index = 0
+    # for image in image_array:
+    #     file = open("threes_out/"+str(index)+".txt",'w')
+    #
+    #     # a = image.matrix
+    #     # print a
+    #     # #print
+    #     # #flip_ud_face = np.flipud(a)
+    #     # #print flip_ud_fa
+    #     # print
+    #     # #blurred = image.mean_average_blur(alpha = 2)
+    #     rads = image.axis_of_least_second_movement()
+    #     # #print blurred
+    #     a = image.matrix
+    #     rotate_face = ndimage.rotate(a, -math.degrees(rads),reshape=False)
+    #     for line in rotate_face:
+    #         x = ' '.join([str(x) for x in line])
+    #         file.write(x + '\n')
+    #     file.close()
+    #     index+=1
+    #     print index
+    #     if index>20:
+    #         break
 
         #print rotate_face
         # print

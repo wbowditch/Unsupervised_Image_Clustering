@@ -15,6 +15,7 @@ class Image(object):
         file = open(name,'r')
         array = []
         for line in file:
+            #print line
             array.append([int(x) for x in line.split(" ")])
         return np.array(array)
 
@@ -129,4 +130,18 @@ class Image(object):
                 if self.matrix[r][c] == arr2[r][c]:
                     shared+=1
         return shared/self.size
+
+    def scale(self,scale_x,scale_y): #Kronecker product
+        #scale_x = self.rows/sub_rows
+        #scale_y = self.cols/sub_cols
+
+        a = np.kron(self.matrix, np.ones((scale_x,scale_y)))
+        return a.astype(int)
+
+
+
+
+
+
+
 
