@@ -1,6 +1,7 @@
 #All text files will be read into this class
 import math
 import numpy as np
+from collections import namedtuple
 class Image(object):
 
     def __init__(self,file_name,rows=0,cols=0):
@@ -456,12 +457,56 @@ class Image(object):
     #         neighbors.append(distances[x][0])
     #     return neighbors
 
+    def findHollow(self):
+        shapePoints = []
+        matrix = self.matrix
+        for row in range(1,len(matrix)):
+            for col in range(1,len(row)):
+                if matrix[row][col] == 0:
+                    findContour(self,(row,col))
+
+    def findContour(self, startpoint):
+        matrix = self.matrix
+        points = []
+        for row in range(1,len(matrix)):
+            for col in range(1,len(row)):
 
 
 
 
-
-
+    # def findContours(self):
+    #     matrix = self.matrix
+    #     threshold = 5
+    #     prevValue = 0
+    #     contourData = []
+    #     for row in range(0, len(matrix)):
+    #         for col in range(0, len(row)):
+    #             current = matrix[row][col]
+    #             if prevValue == 0 and current == 1 and (row, col) not in contourData:
+    #                 contourData.append((row, col))
+    #                 followContour()
+    #             prevValue = 1
+    #     # Check stored contours
+    #     for tuple in contourData:
+    #         simplifyContour()
+    #     findmovepaths()
+    #
+    # def followContour(self, startpoint):
+    #     points = [] #new contour points
+    #     point = startpoint
+    #     matrix = self.matrix
+    #     while point != startpoint:
+    #         # go clockwise through neighbors (starting at east side)
+    #         neighbors = [(a, b) for a in range(point[0] - 2, point[0] + 3) for b in range(point[1] - 2, point[1] + 3)]  # grab the nearest corners
+    #         neighbors.remove((point[0], point[1]))
+    #         for tuple in neighbors:
+    #             if matrix[tuple[0]][tuple[1]] == 1:
+    #                 point = tuple
+    #                 points += point
+    #     closeContour(points)
+    #
+    # def closeContour(self,points):
+    # # store points
 
 
     def intensityMap(self):

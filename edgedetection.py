@@ -7,12 +7,45 @@ import numpy as np
 
 queryPath = ""
 def readImages():
-    image_array = np.array([])
+    image_array = []
     os.getcwd()
-    for file in os.listdir("/Users/David/Dropbox/BC/Fall16/Algorithms/Unsupervised_Image_Clustering"):
-        x = Image(os.getcwd()+"/category_database/test_images/"+file)
-        np.append(x)
+    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/comparisons"):
+        print file
+        x = Image(os.getcwd()+"/comparisons/"+file)
+        image_array.append(x)
+    i = 0
+    first = image_array[0]
+    print first.matrix
+    b =first.calculate_ratios()
+    a = first.area()
+    print
+    for image in image_array[1:]:
+        #print image.matrix
+        #print image.calculate_ratios()
+        a = image.cornerDetector()
+        #print image.createPockets()
+        #print a
+        #print image.intensityMap()
+        print image.buildPockets()
+        #print a
+        for pair in a:
+            image.matrix[pair[0]][pair[1]] = 5
+        print image.matrix
+        # #rint image.matrix
     return image_array
+
+def testFeature():
+    image_array = []
+    os.getcwd()
+    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/comparisons"):
+        print file
+        x = Image(os.getcwd() + "/comparisons/" + file)
+        image_array.append(x)
+    i = 0
+    image = image_array[]
+    for image in image_array[1:]:
+        print image.findHollow()
+
 
 def noisereduction():
     a = readImages()
