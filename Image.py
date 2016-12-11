@@ -118,6 +118,7 @@ class Image(object):
                 b+= (r-r_)**2*self.matrix[r][c]
                 c+= (c-c_)**2*self.matrix[r][c]
         out = 2.*a/(b - c)
+        self.theta = 0.5*math.atan(out)
         return 0.5*math.atan(out)
 
 
