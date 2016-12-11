@@ -31,8 +31,8 @@ def getInensityGradient(images):
 
 # full scan of image is done to remove any unwanted pixels which may not constitute the edge
 def nonMaximumSurpression():
-    # at every pixel, pixel is checked if it is a local maximum in its neighborhood in the direction of gradient
-
+    #at every pixel, pixel is checked if it is a local maximum in its neighborhood in the direction of gradient
+    return 0
 def main(argv):
     print readImages()
 
