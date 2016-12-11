@@ -2,6 +2,7 @@
 import math
 import numpy as np
 from scipy import ndimage
+from scipy.spatial.distance import pdist
 import operator
 class Image(object):
 
@@ -35,6 +36,8 @@ class Image(object):
 
         self.z_r_b_matrix = self.zoom()
 
+
+
         # print "ZOOMED"
         # print self.z_r_b_matrix
         # print
@@ -46,6 +49,10 @@ class Image(object):
         self.scale_rows = self.rows/self.z_rows
 
         self.s_z_r_b_matrix = self.scale()
+
+        self.pdist = self._pdist()
+        print self.pdist
+
         # print self.size
         #
         # print len(self.s_z_r_b_matrix)*len(self.s_z_r_b_matrix[0])
@@ -67,6 +74,10 @@ class Image(object):
         # self.west = self.west()
         #print self.matrix
         #self.matrix = self.mean_average_blur()
+    def _pdist(self):
+        Y = pdist(self.s_z_r_b_matrix, 'euclidean')
+        return Y.astype(int)
+
 
     def _create_matrix(self,name): #reads image from textfile into numpy array
         file = open(name,'r')
@@ -88,7 +99,7 @@ class Image(object):
                      rads_sigma=0.2,
                      scale_cols_sigma=1,
                      scale_rows_sigma=1,
-                     hamming_simga1=.80,
+                     hamming_simga1=.8,
                      hamming_simga2=.8,
                      hamming_simga3=.8,
                      hamming_simga4=.8,
