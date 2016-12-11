@@ -30,12 +30,15 @@ def main(argv):
         #print image.matrix
         #print image.calculate_ratios()
         a = image.cornerDetector()
+        #print image.createPockets()
         #print a
         #print image.intensityMap()
-        for x,y in a:
-            image.matrix[x][y] = 5
+        print image.buildPockets()
+        #print a
+        for pair in a:
+            image.matrix[pair[0]][pair[1]] = 5
         print image.matrix
-        #rint image.matrix
+        # #rint image.matrix
         print
         print
 

@@ -281,6 +281,7 @@ class Image(object):
         image_array = self.matrix
         rows = self.rows
         cols = self.cols
+
         for i in range(rows):
             for j in range(cols):
                 if image_array[i][j] ==1:
@@ -288,13 +289,174 @@ class Image(object):
                     #print neighbors
                     if neighbors.count(0)>4:
                         corners.append((i,j))
-
+        self.corners = corners
         return corners
+
+
+    def buildPockets_recurse(self,t,corners):
+        x,y = t[0],t[1]
+        #print "looking at neighbors of",(x,y),
+        #print "corners is currently",corners
+        if len(corners) == 0:
+            return []
+        pocket = []
+        neighbors = [(a,b) for a in range(x-2,x+3) for b in range(y-2,y+3)] # grab the nearest corners
+        neighbors.remove((x,y))
+        for z,w in neighbors:
+            if (z,w) in corners:
+
+                corners.remove((z,w))
+                pocket.extend([(z,w)] + self.buildPockets_recurse((z,w),corners))
+        return pocket
+
+
+    def buildPockets(self):
+        pockets = []
+        corners = list(self.corners)
+        getKey = lambda a : math.sqrt(a[0]**2+a[1]**2)
+        corners = sorted(corners,key=getKey)
+        #print corners
+        for i in range(len(self.corners)):
+            if not corners:
+                break
+            x,y = corners.pop(0) # pop off the first corner
+            pocket = [(x,y)]
+            neighbors = [(a,b) for a in range(x-2,x+3) for b in range(y-2,y+3)] # grab the nearest corners
+            neighbors.remove((x,y))
+            for z,w in neighbors:
+                if (z,w) in corners:
+                    #print "found neighbor",(z,w)
+                    corners.remove((z,w))
+
+                    pocket.extend([(z,w)] + self.buildPockets_recurse((z,w),corners))
+
+            pockets.append(pocket)
+            #print "pockets",pockets
+        pockets_averaged = []
+        #print "here",pockets
+        for group in pockets:
+            #print group
+            avg_x = sum([p[0] for p in group])/len(group)
+            avg_y = sum([p[1] for p in group])/len(group)
+            pockets_averaged.append((avg_x,avg_y))
+        #print 1
+        return pockets_averaged
+
+
+
+
+
+    #
+    # def cornerDetectorv3(self,alpha):
+    #     corners = []
+    #     image_array = self.matrix
+    #     rows = self.rows
+    #     cols = self.cols
+    #     squares = alpha**2
+    #     for row in range(0,rows,alpha):
+    #         for col in range(0,cols,alpha):
+    #             neighbors = [image_array[x][y] for x in range(row,min(row+alpha,rows)) for y in range(col,min(col+alpha,cols))]
+    #             ones = neighbors.count(1)
+    #             zeros = neighbors.count(0)
+    #             if zeros and ones > alpha*2:
+    #                 corners.append((row+alpha/2,col+alpha/2))
+    #
+    #     return corners
+    #             #image_output[row][col] = 1 if ones>=zeros else 0
+    #             #neighbors.countsum([p for p in pixelList])/len(pixelList)
+    #         #image_array[row][col][1] = sum([p[1] for p in pixelList ])/len(pixelList)
+    #             #image_array[row][col][2] = sum([p[2] for p in pixelList ])/len(pixelList)
+    #     #self.matrix = image_output
+    #     #return image_output
+
 
 
 
     def cornersPocket(self):
-        pockets
+        pockets = []
+        min_xy = lambda a : math.sqrt(a[0]**2+a[1]**2) + math.sqrt((a[0]-self.rows)**2 + (a[1]-self.cols)**2)
+        getKey = lambda a : a[2]
+        for i in range(len(self.corners)):
+            self.corners[i] = self.corners[i]+[min_xy(self.corners[i])]
+        corners = sorted(self.corners,key=getKey)
+        #distance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+        #return corners
+        data = [x[2] for x in corners]
+        #corners = [x,y,min_xy for x,y,]
+
+        diff = [data[i+1]-data[i] for i in range(len(data)-1)]
+        avg = sum(diff) / len(diff)
+        m = [[corners[0]]]
+        #print m
+
+        for x in corners[1:]:
+            if x[2] - m[-1][-1][2] < avg:
+                m[-1].append(x)
+            else:
+                m.append([x])
+        for i in range(len(m)):
+            for j in range(len(m[i])):
+                m[i][j] = (m[i][j][0],m[i][j][1])
+
+
+        return m
+
+
+    def createPockets(self):
+        corners = self.corners
+        pockets=[]
+        #print corners
+        for x,y in corners:
+            neighbors = [(a,b) for a in range(x-1,x+2) for b in range(y-1,y+2)]
+            pock = []
+            #print neighbors
+            for w,z in neighbors:
+                if (w,z) in self.corners and (w,z)!=(x,y):
+                    print 1
+                    pock.append((w,z))
+                    #corners.remove((w,z))
+            if pock:
+                pockets.append(pock)
+            else:
+                pockets.append((x,y))
+        return pockets
+
+
+
+
+
+
+
+        return pockets
+
+
+        #diff = [corners[i+1]-corners[i] for i in range(len(corners)-1)]
+
+        #for x,y in self.corners:
+
+
+
+    # def getNeighbors(self,corners, k):
+    #     euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+    #     potential_pockets = []
+    #     for x in corners:
+    #         pockets = []
+    #         for y in corners:
+    #             if euclideanDistance(x,y)<
+    #
+    #
+    #     distances = []
+    #     length = len(testInstance)-1
+    #     for x in range(len(trainingSet)):
+    #         dist = self.euclideanDistance(testInstance, trainingSet[x], length)
+    #         distances.append((trainingSet[x], dist))
+    #     distances.sort(key=operator.itemgetter(1))
+    #     neighbors = []
+    #     for x in range(k):
+    #         neighbors.append(distances[x][0])
+    #     return neighbors
+
+
 
 
 
