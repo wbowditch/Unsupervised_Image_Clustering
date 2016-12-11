@@ -10,7 +10,7 @@ class Image(object):
         self.size = len(self.matrix)*len(self.matrix[0])
         self.blurred_image = self.mean_average_blur()
         self.corners = self.cornerDetector()
-        self.area = self.area()
+        self.area_of_shape = self.area()
         self.theta = self.axis_of_least_second_movement()
         self.x_scale = self.x_scale_factor()
         self.y_scale = self.y_scale_factor()
@@ -64,7 +64,6 @@ class Image(object):
         if float(self.area)/self.size >= .5:
             self.inverted_matrix = 1-self.matrix
 
-
     #gaussian filter
     def mean_average_blur(self):
         image_array = self.matrix
@@ -100,12 +99,6 @@ class Image(object):
     def cols(self):
         return self.cols
 
-    def area(self):
-        area = 0
-        for r in range(self.rows):
-            for c in range(self.cols):
-                area+= self.matrix[r][c]
-        return area
 
 
     def center_of_area(self):
@@ -121,6 +114,10 @@ class Image(object):
         c_ = c_*a
 
         return int(round(c_)),int(round(r_))
+
+    def area(self):
+        rv = self.matrix.sum()
+        return rv
 
 
 # x = xcostheta y sin theta
