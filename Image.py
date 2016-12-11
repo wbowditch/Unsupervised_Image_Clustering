@@ -526,6 +526,21 @@ class Image(object):
 
         return image_out
 
+    def distances(self):
+        points = self.grouped_corners
+        if(len(points) > 1):
+            distances = {}
+            for i in range(len(points)):
+                a = points[i]
+                for j in range(i + 1, len(points)):
+                    b = points[j]
+                    distances[(a,b)] = math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+            maximum = max(distances, key=distances.get)
+            print "Max distance between " + str(maximum) + "= " + str(distances[maximum])
+            minimum = min(distances, key=distances.get)
+            print "Min distance between " + str(minimum) + "= " + str(distances[minimum])
+        else:
+            print "Only " + str(len(points)) + " point(s)"
 
 
 
