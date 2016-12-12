@@ -12,89 +12,24 @@ class Image(object):
         self.rows = self.original_matrix.shape[0]
         self.cols = self.original_matrix.shape[1]
         self.size = len(self.original_matrix)*len(self.original_matrix[0])
-        # print "ORIGINAL"
-        # print self.original_matrix
-        # print
-
-        #BLUR Image, get area and coordinates of blurred image object
         self.b_matrix = self.mean_average_blur()
         self.b_area_ = self.b_area()
         self.b_center = self.b_center_of_area()
-        #
-        # print "BLURRED"
-        # print self.b_matrix
-        # print
-
         self.b_radians = self.b_axis_of_least_second_movement()
         self.b_c_matrix = self.b_center_matrix()
         self.z_b_c_matrix = self.zoom()
         self.keep = self.keep_or_not()
         self.z_rows = self.z_b_c_matrix.shape[0]
         self.z_cols = self.z_b_c_matrix.shape[1]
-        # try:
-            # print ("init size: {}\t{}\n".format(self.rows, self.cols))
-            # print ("zoom size: {}\t{}\n".format(self.z_rows, self.z_cols))
         self.scale_cols = self.cols/self.z_cols
         self.scale_rows = self.rows/self.z_rows
-        # print ("scale size: {}\t{}\n" .format(self.scale_rows, self.scale_cols))
         self.s_z_b_c_matrix = self.scale()
-        # except ZeroDivisionError:
-        #     self.s_z_b_c_matrix = self.b_c_matrix
         self.r_s_z_b_c_matrix = self.rotate_blurred_matrix()
-
-
-
-        #self.r_b_centered_matrix = self.r_b_center_matrix()
-
-        # print "ROTATED"
-        # print self.r_b_matrix
-        # print
-
-        # self.z_r_b_matrix = self.zoom()
-
-        # print "ZOOMED"
-        # print self.z_r_b_matrix
-        # print
-
-        # self.z_rows = self.z_r_b_matrix.shape[0]
-        # self.z_cols = self.z_r_b_matrix.shape[1]
-
-        # try:
-        #     print ("init size: {}\t{}\n".format(self.rows, self.cols))
-        #     print ("zoom size: {}\t{}\n".format(self.z_rows, self.z_cols))
-        #     self.scale_cols = self.cols/self.z_cols
-        #     self.scale_rows = self.rows/self.z_rows
-        #     print ("scale size: {}\t{}\n" .format(self.scale_rows, self.scale_cols))
-        #     self.s_z_r_b_matrix = self.scale()
-        # except ZeroDivisionError:
-        #     self.s_z_r_b_matrix = self.r_b_matrix
-        # print self.size
-        #
-        # print len(self.s_z_r_b_matrix)*len(self.s_z_r_b_matrix[0])
-
-        #self.corners = self.cornerDetector()
-
-        #self.grouped_corners = self.buildPockets()
-
-
-
-
-
-
-
-        #DEBATABLE WHETHER WE NEED THESE POINTS
-        # self.north = self.north()
-        # self.south = self.south()
-        # self.east = self.east()
-        # self.west = self.west()
-        #print self.matrix
-        #self.matrix = self.mean_average_blur()
 
     def _create_matrix(self,name): #reads image from textfile into numpy array
         file = open(name,'r')
         array = []
         for line in file:
-            #print line
             array.append([int(x) for x in line.split(" ")])
         return np.array(array)
 
@@ -162,7 +97,6 @@ class Image(object):
                 for point in block:
                     if point in image.grouped_corners:
                         points+=1
-            #print points
             print image.file_name,points
             score[image] = points
 
@@ -216,28 +150,6 @@ class Image(object):
                 south -= 1
         temp = img[north:south, west:east]
         return temp
-
-        #print r,c
-
-        #side_rows = round((self.b_area_)**.5)
-        #side_cols = side_rows
-        #print "before"
-        #print side_cols,side_rows
-        #print self.rows,self.cols
-
-        # return img
-        #
-        # while self.rows%side_rows !=0: #so that it scaled properly
-        #     side_rows+=1
-        # while self.cols%side_cols !=0: #so that it scaled properly
-        #     side_cols+=1
-        #
-        # print side_rows,side_cols
-        #
-        # offset_r = side_rows
-        # offset_c = side_cols+1
-        # x = img[max(0,r-offset_r):min(r+offset_r,self.rows),max(0,c-offset_c):min(self.cols,c+offset_c)]
-        # return x
 
 
 
