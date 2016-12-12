@@ -4,6 +4,7 @@ import numpy as np
 from scipy import ndimage
 from scipy.spatial.distance import pdist
 import operator
+from numpy.linalg import svd
 class Image(object):
 
     def __init__(self,file_name,rows=0,cols=0):
@@ -38,6 +39,9 @@ class Image(object):
 
 
 
+
+
+
         # print "ZOOMED"
         # print self.z_r_b_matrix
         # print
@@ -49,17 +53,20 @@ class Image(object):
         self.scale_rows = self.rows/self.z_rows
 
         self.s_z_r_b_matrix = self.scale()
+        self.corners = self.cornerDetector()
 
-        self.pdist = self._pdist()
-        print self.pdist
+        self.grouped_corners = self.buildPockets()
+
+        self.neighborhoods = self.corner_neighborhood()
+
+        # self.pdist = self._pdist()
+        # print self.pdist
 
         # print self.size
         #
         # print len(self.s_z_r_b_matrix)*len(self.s_z_r_b_matrix[0])
 
-        self.corners = self.cornerDetector()
 
-        self.grouped_corners = self.buildPockets()
 
 
 
@@ -92,17 +99,17 @@ class Image(object):
         return ndimage.rotate(self.b_matrix, -math.degrees(rads),reshape=False)
 
 
-    def decisionTree(self, database_images,k=3,
-                     area_sigma=5,
-                     b_area_sigma=5,
+    def decisionTree(self, database_images,k=9,
+                     area_sigma=10,
+                     b_area_sigma=10,
                      center_diff_sigma=5,
-                     rads_sigma=0.2,
+                     rads_sigma=0.1,
                      scale_cols_sigma=1,
                      scale_rows_sigma=1,
                      hamming_simga1=.8,
-                     hamming_simga2=.8,
-                     hamming_simga3=.8,
-                     hamming_simga4=.8,
+                     hamming_simga2=.85,
+                     hamming_simga3=.9,
+                     hamming_simga4=.95,
                      ):  #return k closets neighbors
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
         score =  {image: 0 for image in database_images}
@@ -111,58 +118,121 @@ class Image(object):
         for image in database_images:
             points = 0
             if abs(self.area_ - image.area_) < area_sigma:
-                points+=1
+                points+=2
+            else:
+                points-=1
 
             if abs(self.b_area_ - image.b_area_) < b_area_sigma:
-                points+=1
+                points+=2
+            else:
+                points-=1
 
             if euclideanDistance(self.b_center,image.b_center) < center_diff_sigma:
-                points+=1
+                points+=2
+            else:
+                points-=1
 
             if abs(self.b_radians - image.b_radians) < rads_sigma:
-                points+=1
+                points+=2
+            else:
+                points-=1
 
             if abs(self.scale_cols - image.scale_cols) < scale_cols_sigma:
-                points+=1
+                points+=2
+            else:
+                points-=1
 
             if abs(self.scale_rows - image.scale_rows) < scale_rows_sigma:
-                points+=1
+                points+=2
+            else:
+                points-=1
 
-            if self.hamming_distance1(image.original_matrix) > hamming_simga1:
-                points+=5
+            if self.hamming_distance4(image.s_z_r_b_matrix) > hamming_simga1:
+                points+=2
+            else:
+                points-=1
 
-            if self.hamming_distance2(image.b_matrix) > hamming_simga2:
-                points+=5
+            if self.hamming_distance4(image.s_z_r_b_matrix) > hamming_simga2:
+                points+=2
+            else:
+                points-=1
 
-            if self.hamming_distance3(image.r_b_matrix) > hamming_simga3:
-                points+=5
+            if self.hamming_distance4(image.s_z_r_b_matrix) > hamming_simga3:
+                points+=3
+            else:
+                points-=1
 
             if self.hamming_distance4(image.s_z_r_b_matrix) > hamming_simga4:
-                points+=5
+                points+=4
 
 
+            points+= - abs(len(self.neighborhoods)-len(image.neighborhoods))**2
+
+            c = 0
+            for neighborhood1 in self.neighborhoods:
+                #print svd(neighborhood1)
+                U1= svd(neighborhood1,compute_uv=False)
+                for neighborhood2 in image.neighborhoods:
+
+                    U2= svd(neighborhood2,compute_uv=False)
+
+                    #print svd(neighborhood1) - svd(neighborhood2,compute_uv=False)
+                    diff = abs(sum(U1 - U2))
+
+                    # print diff
+                    if diff<0.1:
+                        # print self.file_name,image.file_name,round(diff,2)
+                        # print neighborhood1
+                        # print neighborhood2
+                        # print self.s_z_r_b_matrix
+                        # print image.s_z_r_b_matrix
+                        points+=2
+                        c+=1
+            if c<len(image.neighborhoods)-1:
+                points-=1
+            else:
+                points+=1
 
 
+                    #else:
+                        #print self.file_name,image.file_name,round(diff,2)
 
-            for corner in self.grouped_corners:
-                x,y = corner
-                block = neighbors = [(a,b) for a in range(x-2,x+3) for b in range(y-2,y+3)]
-                block.remove((x,y))
-                for point in block:
-                    if point in image.grouped_corners:
-                        points+=1
-            #print points
-            print image.file_name,points
+            #     x,y = corner
+            #     block = neighbors = [(a,b) for a in range(x-2,x+3) for b in range(y-2,y+3)]
+            #     block.remove((x,y))
+            #     for point in block:
+            #         if point in image.grouped_corners:
+            #             points+=1
+            # #print points
+            # print image.file_name,points
             score[image] = points
 
         out = []
         d = dict(sorted(score.iteritems(), key=operator.itemgetter(1), reverse=True)[:k])
+        count = 0
         for key in d:
             out.append(key.file_name)
-        return out
+            if key.file_name.startswith(self.file_name[:3]):
+                count+=1
+        return out,count
 
 
 
+
+    def corner_neighborhood(self):
+        corners = self.grouped_corners
+        img = self.s_z_r_b_matrix
+        neighborhoods = []
+
+        for r,c in corners:
+            try:
+                neighborhood = np.array([img[a][b] for a in range(r-2,r+3) for b in range(c-2,c+3)]).reshape((5,5))
+            except IndexError:
+                continue
+            #print neighborhood
+            neighborhoods.append(neighborhood)
+
+        return neighborhoods
 
 
 
@@ -218,7 +288,8 @@ class Image(object):
             #image_array[row][col][1] = sum([p[1] for p in pixelList ])/len(pixelList)
                 #image_array[row][col][2] = sum([p[2] for p in pixelList ])/len(pixelList)
         #self.matrix = image_output
-        return image_output
+        return image_array
+        #return image_output
 
     def __len__(self):
         return self.size
@@ -250,7 +321,7 @@ class Image(object):
         r_ = r_*a
         c_ = c_*a
 
-        return int(round(c_)),int(round(r_))
+        return int(round(r_)),int(round(c_))
 
 
 
