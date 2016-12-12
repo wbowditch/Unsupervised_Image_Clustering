@@ -61,6 +61,8 @@ class Image(object):
 
         self.grouped_corners = self.buildPockets()
 
+        self.edgelist = self.getEdgeList()
+
 
 
 
@@ -514,19 +516,19 @@ class Image(object):
     #         neighbors.append(distances[x][0])
     #     return neighbors
 
-    def findHollow(self):
-        shapePoints = []
-        matrix = self.matrix
-        for row in range(1,len(matrix)):
-            for col in range(1,len(row)):
-                if matrix[row][col] == 0:
-                    findContour(self,(row,col))
-
-    def findContour(self, startpoint):
-        matrix = self.matrix
-        points = []
-        for row in range(1,len(matrix)):
-            for col in range(1,len(row)):
+    # def findHollow(self):
+    #     shapePoints = []
+    #     matrix = self.matrix
+    #     for row in range(1,len(matrix)):
+    #         for col in range(1,len(row)):
+    #             if matrix[row][col] == 0:
+    #                 findContour(self,(row,col))
+    #
+    # def findContour(self, startpoint):
+    #     matrix = self.matrix
+    #     points = []
+    #     for row in range(1,len(matrix)):
+    #         for col in range(1,len(row)):
 
 
 
@@ -565,7 +567,6 @@ class Image(object):
     # def closeContour(self,points):
     # # store points
 
-
     def intensityMap(self):
         #corners = []
         image_array = self.matrix
@@ -596,6 +597,27 @@ class Image(object):
             print "Min distance between " + str(minimum) + "= " + str(distances[minimum])
         else:
             print "Only " + str(len(points)) + " point(s)"
+
+    def getEdgeList(self):
+        edgelist =[]
+        edge_horizont = ndimage.sobel(self.s_z_r_b_matrix, 0)
+        edge_vertical = ndimage.sobel(self.s_z_r_b_matrix, 1)
+        magnitude = np.hypot(edge_horizont, edge_vertical)
+        for x in range(len(magnitude)):
+            for y in range(len(magnitude[x])):
+                if magnitude[x][y] != float(0):
+                    # print "Adding " + str((x,y)) + " = " + str(magnitude[x][y])
+                    edgelist.append((x, y))
+        # print magnitude
+        # plt.subplot(144)
+        # plt.imshow(magnitude)
+        # plt.axis('off')
+        # plt.title('Sobel for noisy image', fontsize=20)
+        #
+        # plt.subplots_adjust(wspace=0.02, hspace=0.02, top=1, bottom=0, left=0, right=0.9)
+        #
+        # plt.show()
+        return edgelist
 
 
 

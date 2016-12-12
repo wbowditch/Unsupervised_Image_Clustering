@@ -40,7 +40,7 @@ def main(argv):
         print "Corners Group Count",len(image.grouped_corners)
         print "Corner Groups",image.grouped_corners
         print "Distnaces:"+"\n", image.distances()
-        print
+        print "Edge List: ", image.edgelist
         print
         print
 
@@ -56,7 +56,7 @@ def main(argv):
         print "Corners Group Count",len(image.grouped_corners)
         print "Corner Groups",image.grouped_corners
         print "Distnaces:"+"\n", image.distances()
-        print
+        print "Edge List: ", image.edgelist
         print
         print
 

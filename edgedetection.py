@@ -4,14 +4,16 @@ import sys
 import os
 from Image import *
 import numpy as np
+from scipy import ndimage
+import matplotlib.pyplot as plt
 
 queryPath = ""
 def readImages():
     image_array = []
     os.getcwd()
-    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/comparisons"):
+    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/database"):
         print file
-        x = Image(os.getcwd()+"/comparisons/"+file)
+        x = Image(os.getcwd()+"/database/"+file)
         image_array.append(x)
     i = 0
     first = image_array[0]
@@ -35,16 +37,34 @@ def readImages():
     return image_array
 
 def testFeature():
+    edgelist = []
     image_array = []
     os.getcwd()
-    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/comparisons"):
-        print file
-        x = Image(os.getcwd() + "/comparisons/" + file)
+    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/database"):
+        # print file
+        x = Image(os.getcwd() + "/database/" + file)
         image_array.append(x)
     i = 0
-    image = image_array[]
-    for image in image_array[1:]:
-        print image.findHollow()
+    image = image_array[2]
+    # print image
+    edge_horizont = ndimage.sobel(image.s_z_r_b_matrix, 0)
+    edge_vertical = ndimage.sobel(image.s_z_r_b_matrix, 1)
+    magnitude = np.hypot(edge_horizont, edge_vertical)
+    for x in range(len(magnitude)):
+        for y in range(len(magnitude[x])):
+            if magnitude[x][y] != float(0):
+                # print "Adding " + str((x,y)) + " = " + str(magnitude[x][y])
+                edgelist.append((x,y))
+    print str(edgelist)
+    # print magnitude
+    # plt.subplot(144)
+    # plt.imshow(magnitude)
+    # plt.axis('off')
+    # plt.title('Sobel for noisy image', fontsize=20)
+    #
+    # plt.subplots_adjust(wspace=0.02, hspace=0.02, top=1, bottom=0, left=0, right=0.9)
+    #
+    # plt.show()
 
 
 def noisereduction():
@@ -67,7 +87,7 @@ def nonMaximumSurpression():
     #at every pixel, pixel is checked if it is a local maximum in its neighborhood in the direction of gradient
     return 0
 def main(argv):
-    print readImages()
+    print "Started"
 
 if __name__ == '__main__':
     main(sys.argv)
