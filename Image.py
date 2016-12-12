@@ -54,6 +54,13 @@ class Image(object):
             array.append([int(x) for x in line.split(" ")])
         return np.array(array)
 
+    def invert_matrix(self):
+        inverted_matrix = []
+        #if the image is a negative image where the area is defined by 0s
+        #   invert the image
+        return 0
+
+
     def rotate_blurred_matrix(self):
         rads = self.b_radians
         return ndimage.rotate(self.s_z_b_c_matrix, -math.degrees(rads),reshape=False)
