@@ -15,61 +15,33 @@ class Image(object):
         self.rows = self.original_matrix.shape[0]
         self.cols = self.original_matrix.shape[1]
         self.size = len(self.original_matrix) * len(self.original_matrix[0])
-        # print "ORIGINAL"
-        # print self.original_matrix
-        # print
 
         # BLUR Image, get area and coordinates of blurred image object
         self.b_matrix = self.mean_average_blur()
         self.b_area_ = self.b_area()
         self.b_center = self.b_center_of_area()
-        #
-        # print "BLURRED"
-        # print self.b_matrix
-        # print
-
         self.b_radians = self.b_axis_of_least_second_movement()
+
+        # ROTATED
         self.r_b_matrix = self.rotate_blurred_matrix()
-
-        # print "ROTATED"
-        # print self.r_b_matrix
-        # print
-
         self.z_r_b_matrix = self.zoom()
 
-        # print "ZOOMED"
-        # print self.z_r_b_matrix
-        # print
-
+        # ZOOMED
         self.z_rows = self.z_r_b_matrix.shape[0]
         self.z_cols = self.z_r_b_matrix.shape[1]
 
+        # SCALE
         self.scale_cols = self.cols / self.z_cols
         self.scale_rows = self.rows / self.z_rows
-
         self.s_z_r_b_matrix = self.scale()
-        self.corners = self.cornerDetector()
 
+        # CORNERS
+        self.corners = self.cornerDetector()
         self.grouped_corners = self.buildPockets()
 
+        # EXTRA FEATURES
         self.neighborhoods = self.corner_neighborhood()
-
-        # self.pdist = self._pdist()
-        # print self.pdist
-
-        # print self.size
-        #
-        # print len(self.s_z_r_b_matrix)*len(self.s_z_r_b_matrix[0])
-
-
-
         self.edgelist = self.getEdgeList()
-
-
-
-
-
-
 
         # DEBATABLE WHETHER WE NEED THESE POINTS
         # self.north = self.north()
@@ -87,7 +59,6 @@ class Image(object):
         file = open(name, 'r')
         array = []
         for line in file:
-            # print line
             array.append([int(x) for x in line.split(" ")])
         return np.array(array)
 
@@ -222,7 +193,6 @@ class Image(object):
                     (5, 5))
             except IndexError:
                 continue
-            # print neighborhood
             neighborhoods.append(neighborhood)
 
         return neighborhoods
@@ -230,14 +200,8 @@ class Image(object):
     def zoom(self):
         r, c = self.b_center
         img = self.r_b_matrix
-        # print r,c
-
         side_rows = round((self.b_area_) ** .5)
         side_cols = side_rows
-        # print "before"
-        # print side_cols,side_rows
-        # print self.rows,self.cols
-
         return img
 
         while self.rows % side_rows != 0:  # so that it scaled properly
@@ -265,19 +229,12 @@ class Image(object):
 
         for row in range(height):
             for col in range(width):
-                # rowStart = row/alpha*alpha
-                # colStart = col/alpha*alpha
                 neighbors = [image_array[x][y] for x in range(max(row - 2, 0), min(row + 2, height)) for y in
                              range(max(0, col - 2), min(col + 2, width))]
                 ones = neighbors.count(1)
                 zeros = neighbors.count(0)
                 image_output[row][col] = 1 if ones >= zeros else 0
-                # neighbors.countsum([p for p in pixelList])/len(pixelList)
-                # image_array[row][col][1] = sum([p[1] for p in pixelList ])/len(pixelList)
-                # image_array[row][col][2] = sum([p[2] for p in pixelList ])/len(pixelList)
-        # self.matrix = image_output
         return image_array
-        # return image_output
 
     def __len__(self):
         return self.size
@@ -296,7 +253,6 @@ class Image(object):
 
     def b_center_of_area(self):  # returns estimated center of object
         img = self.b_matrix
-        # self.area_ = self.b_area
         r_ = 0
         c_ = 0
         for r in range(self.rows):
@@ -306,7 +262,6 @@ class Image(object):
         a = 1. / self.b_area_
         r_ = r_ * a
         c_ = c_ * a
-
         return int(round(r_)), int(round(c_))
 
     def b_axis_of_least_second_movement(self):  # returns the radian degree of rotation
@@ -441,7 +396,6 @@ class Image(object):
                 if image_array[i][j] == 1:
                     neighbors = [image_array[x][y] for x in range(max(i - 1, 0), min(i + 2, rows)) for y in
                                  range(max(0, j - 1), min(j + 2, cols))]
-                    # print neighbors
                     if neighbors.count(0) > 4:
                         corners.append((i, j))
         self.corners = corners
@@ -449,8 +403,6 @@ class Image(object):
 
     def buildPockets_recurse(self, t, corners):
         x, y = t[0], t[1]
-        # print "looking at neighbors of",(x,y),
-        # print "corners is currently",corners
         if len(corners) == 0:
             return []
         pocket = []
@@ -467,7 +419,6 @@ class Image(object):
         corners = list(self.corners)
         getKey = lambda a: math.sqrt(a[0] ** 2 + a[1] ** 2)
         corners = sorted(corners, key=getKey)
-        # print corners
         for i in range(len(self.corners)):
             if not corners:
                 break
@@ -477,133 +428,17 @@ class Image(object):
             neighbors.remove((x, y))
             for z, w in neighbors:
                 if (z, w) in corners:
-                    # print "found neighbor",(z,w)
                     corners.remove((z, w))
-
                     pocket.extend([(z, w)] + self.buildPockets_recurse((z, w), corners))
-
             pockets.append(pocket)
-            # print "pockets",pockets
         pockets_averaged = []
-        # print "here",pockets
         for group in pockets:
-            # print group
             avg_x = sum([p[0] for p in group]) / len(group)
             avg_y = sum([p[1] for p in group]) / len(group)
             pockets_averaged.append((avg_x, avg_y))
-        # print 1
         return pockets_averaged
 
-
-
-
-
-        #
-        # def cornerDetectorv3(self,alpha):
-        #     corners = []
-        #     image_array = self.matrix
-        #     rows = self.rows
-        #     cols = self.cols
-        #     squares = alpha**2
-        #     for row in range(0,rows,alpha):
-        #         for col in range(0,cols,alpha):
-        #             neighbors = [image_array[x][y] for x in range(row,min(row+alpha,rows)) for y in range(col,min(col+alpha,cols))]
-        #             ones = neighbors.count(1)
-        #             zeros = neighbors.count(0)
-        #             if zeros and ones > alpha*2:
-        #                 corners.append((row+alpha/2,col+alpha/2))
-        #
-        #     return corners
-        #             #image_output[row][col] = 1 if ones>=zeros else 0
-        #             #neighbors.countsum([p for p in pixelList])/len(pixelList)
-        #         #image_array[row][col][1] = sum([p[1] for p in pixelList ])/len(pixelList)
-        #             #image_array[row][col][2] = sum([p[2] for p in pixelList ])/len(pixelList)
-        #     #self.matrix = image_output
-        #     #return image_output
-
-
-
-
-
-
-
-        # diff = [corners[i+1]-corners[i] for i in range(len(corners)-1)]
-
-        # for x,y in self.corners:
-
-    # def getNeighbors(self,corners, k):
-    #     euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
-    #     potential_pockets = []
-    #     for x in corners:
-    #         pockets = []
-    #         for y in corners:
-    #             if euclideanDistance(x,y)<
-    #
-    #
-    #     distances = []
-    #     length = len(testInstance)-1
-    #     for x in range(len(trainingSet)):
-    #         dist = self.euclideanDistance(testInstance, trainingSet[x], length)
-    #         distances.append((trainingSet[x], dist))
-    #     distances.sort(key=operator.itemgetter(1))
-    #     neighbors = []
-    #     for x in range(k):
-    #         neighbors.append(distances[x][0])
-    #     return neighbors
-
-    # def findHollow(self):
-    #     shapePoints = []
-    #     matrix = self.matrix
-    #     for row in range(1,len(matrix)):
-    #         for col in range(1,len(row)):
-    #             if matrix[row][col] == 0:
-    #                 findContour(self,(row,col))
-    #
-    # def findContour(self, startpoint):
-    #     matrix = self.matrix
-    #     points = []
-    #     for row in range(1,len(matrix)):
-    #         for col in range(1,len(row)):
-
-
-
-
-    # def findContours(self):
-    #     matrix = self.matrix
-    #     threshold = 5
-    #     prevValue = 0
-    #     contourData = []
-    #     for row in range(0, len(matrix)):
-    #         for col in range(0, len(row)):
-    #             current = matrix[row][col]
-    #             if prevValue == 0 and current == 1 and (row, col) not in contourData:
-    #                 contourData.append((row, col))
-    #                 followContour()
-    #             prevValue = 1
-    #     # Check stored contours
-    #     for tuple in contourData:
-    #         simplifyContour()
-    #     findmovepaths()
-    #
-    # def followContour(self, startpoint):
-    #     points = [] #new contour points
-    #     point = startpoint
-    #     matrix = self.matrix
-    #     while point != startpoint:
-    #         # go clockwise through neighbors (starting at east side)
-    #         neighbors = [(a, b) for a in range(point[0] - 2, point[0] + 3) for b in range(point[1] - 2, point[1] + 3)]  # grab the nearest corners
-    #         neighbors.remove((point[0], point[1]))
-    #         for tuple in neighbors:
-    #             if matrix[tuple[0]][tuple[1]] == 1:
-    #                 point = tuple
-    #                 points += point
-    #     closeContour(points)
-    #
-    # def closeContour(self,points):
-    # # store points
-
     def intensityMap(self):
-        # corners = []
         image_array = self.matrix
         image_out = image_array
         rows = self.rows
@@ -613,9 +448,7 @@ class Image(object):
                 if image_array[i][j] == 1:
                     neighbors = [image_array[x][y] for x in range(max(i - 1, 0), min(i + 2, rows)) for y in
                                  range(max(0, j - 1), min(j + 2, cols))]
-                    # print neighbors
                     image_out[i][j] = neighbors.count(1)
-
         return image_out
 
     def distances(self):
@@ -642,15 +475,5 @@ class Image(object):
         for x in range(len(magnitude)):
             for y in range(len(magnitude[x])):
                 if magnitude[x][y] != float(0):
-                    # print "Adding " + str((x,y)) + " = " + str(magnitude[x][y])
                     edgelist.append((x, y))
-        # print magnitude
-        # plt.subplot(144)
-        # plt.imshow(magnitude)
-        # plt.axis('off')
-        # plt.title('Sobel for noisy image', fontsize=20)
-        #
-        # plt.subplots_adjust(wspace=0.02, hspace=0.02, top=1, bottom=0, left=0, right=0.9)
-        #
-        # plt.show()
         return edgelist

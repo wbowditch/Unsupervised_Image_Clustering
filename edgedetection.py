@@ -1,11 +1,7 @@
-import math
 from scipy.ndimage.filters import gaussian_filter
 import sys
 import os
 from Image import *
-import numpy as np
-from scipy import ndimage
-import matplotlib.pyplot as plt
 
 queryPath = ""
 def readImages():
@@ -35,37 +31,6 @@ def readImages():
         print image.matrix
         # #rint image.matrix
     return image_array
-
-def testFeature():
-    edgelist = []
-    image_array = []
-    os.getcwd()
-    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/database"):
-        # print file
-        x = Image(os.getcwd() + "/database/" + file)
-        image_array.append(x)
-    i = 0
-    image = image_array[2]
-    # print image
-    edge_horizont = ndimage.sobel(image.s_z_r_b_matrix, 0)
-    edge_vertical = ndimage.sobel(image.s_z_r_b_matrix, 1)
-    magnitude = np.hypot(edge_horizont, edge_vertical)
-    for x in range(len(magnitude)):
-        for y in range(len(magnitude[x])):
-            if magnitude[x][y] != float(0):
-                # print "Adding " + str((x,y)) + " = " + str(magnitude[x][y])
-                edgelist.append((x,y))
-    print str(edgelist)
-    # print magnitude
-    # plt.subplot(144)
-    # plt.imshow(magnitude)
-    # plt.axis('off')
-    # plt.title('Sobel for noisy image', fontsize=20)
-    #
-    # plt.subplots_adjust(wspace=0.02, hspace=0.02, top=1, bottom=0, left=0, right=0.9)
-    #
-    # plt.show()
-
 
 def noisereduction():
     a = readImages()
