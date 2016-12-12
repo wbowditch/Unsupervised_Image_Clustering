@@ -1,6 +1,8 @@
 import sys
 import os
 from Image import *
+
+from scipy.optimize import fsolve,brute,fmin
 import numpy as np
 #from skimage import measure
 #from countours import *
@@ -66,7 +68,32 @@ def main(argv):
         # for x in image.neighborhoods:
         #     print x
         #     print
-    #f = open('outputs/out2.txt', 'w')
+    # area_sigma=1
+    # b_area_sigma=2
+    # center_diff_sigma=0
+    # rads_sigma=0.0
+    # scale_cols_sigma=1
+    # scale_rows_sigma=1
+    # hamming_simga1=.8
+    # hamming_simga2=.85
+    # hamming_simga3=.9
+    # hamming_simga4=.95
+
+
+    for image in queries:
+        #print image.file_name
+        print image.file_name
+        print image.decisionTree(database)
+        #Vt = fsolve(image.decisionTree, rranges, args=params)
+        #resbrute = brute(image.decisionTree, rranges, args=params, full_output=True,finish=fmin)
+        #print resbrute[0]
+        #print resbrute[1]
+
+       # x = fsolve(image.decisionTree,[])
+
+
+
+   # f = open('outputs/out2.txt', 'w')
     # for image in queries:
     #     f.write("Name: "+image.file_name+'\n')
     #     f.write(str(image.decisionTree(database)) + '\n')

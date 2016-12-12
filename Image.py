@@ -42,6 +42,8 @@ class Image(object):
 
 
 
+
+
         # print "ZOOMED"
         # print self.z_r_b_matrix
         # print
@@ -58,6 +60,10 @@ class Image(object):
         self.grouped_corners = self.buildPockets()
 
         self.neighborhoods = self.corner_neighborhood()
+
+        self.edges = self.getEdgeList()
+
+        self.edge_groups = self.edges_neighborhood()
 
         # self.pdist = self._pdist()
         # print self.pdist
@@ -100,20 +106,19 @@ class Image(object):
 
 
     def decisionTree(self, database_images,k=9,
-                     area_sigma=10,
-                     b_area_sigma=10,
+                     area_sigma=30,
+                     b_area_sigma=30,
                      center_diff_sigma=5,
-                     rads_sigma=0.1,
+                     rads_sigma=0.01,
                      scale_cols_sigma=1,
                      scale_rows_sigma=1,
                      hamming_simga1=.8,
                      hamming_simga2=.85,
                      hamming_simga3=.9,
-                     hamming_simga4=.95,
+                     hamming_simga4=.9,
                      ):  #return k closets neighbors
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
         score =  {image: 0 for image in database_images}
-        print self.file_name
 
         for image in database_images:
             points = 0
@@ -132,7 +137,7 @@ class Image(object):
             else:
                 points-=1
 
-            if abs(self.b_radians - image.b_radians) < rads_sigma:
+            if abs(self.b_radians - image.b_radians) == rads_sigma:
                 points+=2
             else:
                 points-=1
@@ -159,16 +164,15 @@ class Image(object):
 
             if self.hamming_distance4(image.s_z_r_b_matrix) > hamming_simga3:
                 points+=3
-            else:
-                points-=1
 
             if self.hamming_distance4(image.s_z_r_b_matrix) > hamming_simga4:
                 points+=4
 
 
-            points+= - abs(len(self.neighborhoods)-len(image.neighborhoods))**2
+            #points+= - abs(len(self.neighborhoods)-len(image.neighborhoods))**2
 
             c = 0
+            #a = self.edges
             for neighborhood1 in self.neighborhoods:
                 #print svd(neighborhood1)
                 U1= svd(neighborhood1,compute_uv=False)
@@ -180,7 +184,7 @@ class Image(object):
                     diff = abs(sum(U1 - U2))
 
                     # print diff
-                    if diff<0.1:
+                    if diff==0:
                         # print self.file_name,image.file_name,round(diff,2)
                         # print neighborhood1
                         # print neighborhood2
@@ -188,10 +192,8 @@ class Image(object):
                         # print image.s_z_r_b_matrix
                         points+=2
                         c+=1
-            if c<len(image.neighborhoods)-1:
-                points-=1
-            else:
-                points+=1
+
+
 
 
                     #else:
@@ -224,6 +226,21 @@ class Image(object):
         img = self.s_z_r_b_matrix
         neighborhoods = []
 
+        for r,c in corners:
+            try:
+                neighborhood = np.array([img[a][b] for a in range(r-2,r+3) for b in range(c-2,c+3)]).reshape((5,5))
+            except IndexError:
+                continue
+            #print neighborhood
+            neighborhoods.append(neighborhood)
+
+        return neighborhoods
+
+
+    def edges_neighborhood(self):
+        corners = self.edges
+        img = self.s_z_r_b_matrix
+        neighborhoods = []
         for r,c in corners:
             try:
                 neighborhood = np.array([img[a][b] for a in range(r-2,r+3) for b in range(c-2,c+3)]).reshape((5,5))
@@ -623,6 +640,18 @@ class Image(object):
             print "Min distance between " + str(minimum) + "= " + str(distances[minimum])
         else:
             print "Only " + str(len(points)) + " point(s)"
+
+
+    def getEdgeList(self):
+        edgelist = []
+        edge_horizont = ndimage.sobel(self.s_z_r_b_matrix, 0)
+        edge_vertical = ndimage.sobel(self.s_z_r_b_matrix, 1)
+        magnitude = np.hypot(edge_horizont, edge_vertical)
+        for x in range(len(magnitude)):
+            for y in range(len(magnitude[x])):
+                if magnitude[x][y] != float(0):
+                    edgelist.append((x, y))
+        return edgelist
 
 
 
