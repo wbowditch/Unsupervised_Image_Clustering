@@ -11,12 +11,12 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/database"):
+    for file in os.listdir("database"):
         print file
         x = Image("database/"+file)
         database.append(x)
 
-    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/queries"):
+    for file in os.listdir("queries"):
         print file
         x = Image("queries/"+file)
         queries.append(x)
