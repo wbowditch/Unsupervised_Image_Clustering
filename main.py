@@ -1,11 +1,13 @@
-#!/usr/bin/env python
 import sys
 import os
 from Image import *
-
-from scipy.optimize import fsolve,brute,fmin
 import numpy as np
-
+#from skimage import measure
+#from countours import *
+#from scipy import ndimage
+#from scipy import misc
+#from scipy.ndimage.filters import gaussian_filter
+from scipy import ndimage
 
 
 """  when you find the image and are trying ot scale it, you calculate the four corners and then find a buffer such that the array is square """
@@ -15,92 +17,73 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir(argv[2]):
+    for file in os.listdir("/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/database"):
         print file
-        x = Image(argv[2]+"/"+file)
+        x = Image("database/"+file)
         database.append(x)
 
-    for file in os.listdir(argv[1]):
+    for file in os.listdir("/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/queries"):
         print file
-        x = Image(argv[1]+"/"+file)
+        x = Image("queries/"+file)
         queries.append(x)
 
 
 
-    # for image in queries:
-    #     # print "Name",image.file_name
-    #     # print image.s_z_r_b_matrix
-    #     # print "Area",image.area_
-    #     # print "b_Area",image.b_area_
-    #     # print "Center",image.b_center
-    #     # print "Angle",image.b_radians
-    #     # print "Corner Count", len(image.corners)
-    #     # print "Corners Group Count",len(image.grouped_corners)
-    #     # print "Corner Groups",image.grouped_corners
-    #     # print "Distnaces:"+"\n", image.distances()
-    #     # print "Features"
-    #     # for x in image.neighborhoods:
-    #     #     print x
-    #     #     print
-    #     print
-    #     print
+    for image in queries:
+        print "Name",image.file_name
+        print image.s_z_r_b_matrix
+        print "Area",image.area_
+        print "b_Area",image.b_area_
+        print "Center",image.b_center
+        print "Angle",image.b_radians
+        print "Corner Count", len(image.corners)
+        print "Corners Group Count",len(image.grouped_corners)
+        print "Corner Groups",image.grouped_corners
+        print
+        print
+        print
+        print
 
 
-    #for image in database:
-        # print "Name",image.file_name
-        # print image.s_z_r_b_matrix
-        # print "Area",image.area_
-        # print "b_Area",image.b_area_
-        # print "Center",image.b_center
-        # print "Angle",image.b_radians
-        # print "Corner Count", len(image.corners)
-        # print "Corners Group Count",len(image.grouped_corners)
-        # print "Corner Groups",image.grouped_corners
-        # print "Distnaces:"+"\n", image.distances()
-        # print
-        # print
-        # print
-
-        # for x in image.neighborhoods:
-        #     print x
-        #     print
-    # area_sigma=1
-    # b_area_sigma=2
-    # center_diff_sigma=0
-    # rads_sigma=0.0
-    # scale_cols_sigma=1
-    # scale_rows_sigma=1
-    # hamming_simga1=.8
-    # hamming_simga2=.85
-    # hamming_simga3=.9
-    # hamming_simga4=.95
-
-    f = open(argv[3]+'/output.txt', 'w')
+    for image in database:
+        print "Name",image.file_name
+        print image.s_z_r_b_matrix
+        print "Area",image.area_
+        print "b_Area",image.b_area_
+        print "Center",image.b_center
+        print "Angle",image.b_radians
+        print "Corner Count", len(image.corners)
+        print "Corners Group Count",len(image.grouped_corners)
+        print "Corner Groups",image.grouped_corners
+        print
+        print
+        print
+        print
 
     for image in queries:
-        #print image.file_name
-        #print image.file_name
-        arr,c = image.decisionTree(database,k=argv[4])
-        line = ' '.join(arr)
-        f.write(image.file_name + line + '\n')
-    f.close()
+        print "Name",image.file_name
+        print image.decisionTree(database)
 
-        #Vt = fsolve(image.decisionTree, rranges, args=params)
-        #resbrute = brute(image.decisionTree, rranges, args=params, full_output=True,finish=fmin)
-        #print resbrute[0]
-        #print resbrute[1]
-
-       # x = fsolve(image.decisionTree,[])
-
-
-
-   # f = open('outputs/out2.txt', 'w')
-    # for image in queries:
-    #     f.write("Name: "+image.file_name+'\n')
-    #     f.write(str(image.decisionTree(database)) + '\n')
-    #     f.write('\n')
-    #f.close()
-
+    for image in queries:
+        print "File Name: " + image.file_name
+        print "original:"
+        for line in image.original_matrix:
+            print ' '.join(map(str, line))
+        # print "blurred:"
+        # for line in image.original_matrix:
+        #     print ' '.join(map(str,line))
+        # print "centered:"
+        # for line in image.b_c_matrix:
+        #     print ' '.join(map(str,line))
+        # print "zoom:"
+        # for line in image.z_b_c_matrix:
+        #     print ' '.join(map(str,line))
+        print"pre rotate:"
+        for line in image.s_z_b_c_matrix:
+            print ' '.join(map(str, line))
+            # print "Final Pre-processed matrix"
+            # for line in  image.r_s_z_b_c_matrix:
+            #     print ' '.join(map(str, line))
 
 
 

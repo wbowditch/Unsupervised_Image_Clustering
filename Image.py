@@ -3,7 +3,6 @@ import math
 import numpy as np
 from scipy import ndimage
 import operator
-from numpy.linalg import svd
 class Image(object):
 
     def __init__(self,file_name,rows=0,cols=0):
@@ -103,7 +102,7 @@ class Image(object):
 
     def rotate_blurred_matrix(self):
         rads = self.b_radians
-        return ndimage.rotate(self.b_matrix, -math.degrees(rads),reshape=False)
+        return ndimage.rotate(self.s_z_b_c_matrix, -math.degrees(rads),reshape=False)
 
 
     def decisionTree(self, database_images,k=9,
@@ -255,29 +254,48 @@ class Image(object):
 
 
     def zoom(self):
-        r,c = self.b_center
-        img = self.r_b_matrix
-        #print r,c
-
-        side_rows = round((self.b_area_)**.5)
-        side_cols = side_rows
-        #print "before"
-        #print side_cols,side_rows
-        #print self.rows,self.cols
-
-        return img
-
-        while self.rows%side_rows !=0: #so that it scaled properly
-            side_rows+=1
-        while self.cols%side_cols !=0: #so that it scaled properly
-            side_cols+=1
-
-        print side_rows,side_cols
-
-        offset_r = side_rows
-        offset_c = side_cols+1
-        x = img[max(0,r-offset_r):min(r+offset_r,self.rows),max(0,c-offset_c):min(self.cols,c+offset_c)]
-        return x
+        #r,c = self.b_center
+        img = self.b_c_matrix
+        area_of_shape = self.b_area()
+        north = self.north()
+        west = self.west()
+        south = self.south()
+        east = self.east()
+        x_distance , y_distance = 0,0
+        while self.rows % (south - north + y_distance) != 0:
+            y_distance += 1
+        while self.cols % (east - west + x_distance) != 0:
+            x_distance += 1
+        if ((south-north + y_distance) > self.rows-4/2) or ((east - west + x_distance) > self.cols-4/2):
+            return self.b_c_matrix
+        # if ((south-north+y_distance)/self.rows < 1) or ((east-west+x_distance)/self.cols < 1):
+        #     return img
+        if y_distance % 2 == 1:
+            south += 1
+        if x_distance % 2 == 1:
+            west -= 1
+        north -= y_distance/2
+        south += y_distance/2
+        west -= x_distance/2
+        east += x_distance/2
+        if east > self.cols:
+           while east != self.cols:
+                east -= 1
+                west -=1
+        if west < 0:
+            while west != 0:
+                west += 1
+                east += 1
+        if north < 0:
+            while north != 0:
+                north += 1
+                south += 1
+        if south > self.rows:
+            while south != self.rows:
+                north -= 1
+                south -= 1
+        temp = img[north:south, west:east]
+        return temp
 
 
 
@@ -298,7 +316,7 @@ class Image(object):
             for col in range(width):
                 #rowStart = row/alpha*alpha
                 #colStart = col/alpha*alpha
-                neighbors = [image_array[x][y] for x in range(max(row-2,0),min(row+2,height)) for y in range(max(0,col-2),min(col+2,width))]
+                neighbors = [image_array[x][y] for x in range(max(row-1,0),min(row+1,height)) for y in range(max(0,col-1),min(col+1,width))]
                 ones = neighbors.count(1)
                 zeros = neighbors.count(0)
                 image_output[row][col] = 1 if ones>=zeros else 0
@@ -306,8 +324,7 @@ class Image(object):
             #image_array[row][col][1] = sum([p[1] for p in pixelList ])/len(pixelList)
                 #image_array[row][col][2] = sum([p[2] for p in pixelList ])/len(pixelList)
         #self.matrix = image_output
-        return image_array
-        #return image_output
+        return image_output
 
     def __len__(self):
         return self.size
@@ -328,7 +345,6 @@ class Image(object):
 
     def b_center_of_area(self): #returns estimated center of object
         img = self.b_matrix
-        #self.area_ = self.b_area
         r_=0
         c_=0
         for r in range(self.rows):
@@ -379,7 +395,7 @@ class Image(object):
 
 
     def hamming_distance3(self,arr2):
-        img = self.r_b_matrix
+        img = self.b_c_matrix
         shared = 0.0
         for r in range(self.rows):
             for c in range(self.cols):
@@ -406,7 +422,7 @@ class Image(object):
         #scale_x = self.scale_cols
         #scale_y = self.scale_
 
-        a = np.kron(self.z_r_b_matrix, np.ones((self.scale_rows,self.scale_cols)))
+        a = np.kron(self.z_b_c_matrix, np.ones((self.scale_rows,self.scale_cols)))
         # alternate = True
         # while a.shape[0] > self.rows:
         #     if alternate:
@@ -419,7 +435,9 @@ class Image(object):
         #         a = a[:][1:]
         #     else:
         #         a = a[:][:self.a.shape[1]-1]
-
+        #print rows,cols
+        # for line in a:
+        #     print ' '.join(map(str, line))
         return a.astype(int)
 
 
@@ -427,27 +445,32 @@ class Image(object):
     def north(self):
         for i in range (self.rows):
             for j in range (self.cols):
-                if self.matrix[i][j] == 1:
-                    return i
+                if self.b_c_matrix[i][j] == 1:
+                    return i-2
 
     def south(self):
         for i in range (self.rows-1, 0, -1):
             for j in range(self.cols-1, 0, -1):
-                if self.matrix[i][j] == 1:
-                    return i
+                if self.b_c_matrix[i][j] == 1:
+                    return i+4
 
     def east(self):
         for i in range (self.cols-1, 0, -1):
             for j in range (self.rows-1, 0, -1):
-                if self.matrix[j][i] == 1:
-                    return j
+                if self.b_c_matrix[j][i] == 1:
+                    return i+4
 
     def west(self):
         for i in range (self.cols):
             for j in range (self.rows):
-                if self.matrix[j][i] == 1:
-                    return j
+                if self.b_c_matrix[j][i] == 1:
+                    return i-2
 
+    def keep_or_not(self):
+        if self.north() < 0 or self.south() > self.rows or self.west() < 0 or self.east() > self.cols:
+            return False
+        else:
+            return True
 
     def calculate_ratios(self):
         #print self.north,self.south,self.east,self.west
@@ -544,9 +567,22 @@ class Image(object):
         #print 1
         return pockets_averaged
 
-
-
-
+    def b_center_matrix(self):
+        r, c = self.b_center_of_area()
+        y_difference = (self.rows/2)-(r)
+        x_difference = (self.cols/2)-(c)
+        if x_difference == 0 and y_difference == 0:
+            return self.b_matrix
+        centered_matrix = np.copy(self.b_matrix)
+        for x in range (self.rows):
+            for y in range(self.cols):
+                if self.b_matrix[x , y] == 1:
+                    centered_matrix[x+y_difference,y+x_difference],centered_matrix[x, y] = 1,0
+                # else:
+                #     centered_matrix[x+x_difference,y+y_difference] = 0
+                # for line in centered_matrix:
+                #     print ' '.join(map(str, line))
+        return centered_matrix
 
     #
     # def cornerDetectorv3(self,alpha):
