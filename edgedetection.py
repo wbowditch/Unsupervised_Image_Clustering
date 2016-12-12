@@ -8,7 +8,7 @@ def readImages():
     image_array = []
     os.getcwd()
     for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/database"):
-        print file
+        # print file
         x = Image(os.getcwd()+"/database/"+file)
         image_array.append(x)
     i = 0
@@ -32,6 +32,32 @@ def readImages():
         # #rint image.matrix
     return image_array
 
+def test():
+    image_array = []
+    os.getcwd()
+    for file in os.listdir("/Users/David/Dropbox/2016F/CSCI3383/Unsupervised_Image_Clustering/database"):
+        x = Image(os.getcwd() + "/database/" + file)
+        image_array.append(x)
+    image = image_array[6]
+    edgelist = []
+    edge_horizont = ndimage.sobel(image.s_z_r_b_matrix, 0)
+    edge_vertical = ndimage.sobel(image.s_z_r_b_matrix, 1)
+    magnitude = np.hypot(edge_horizont, edge_vertical)
+    print image.s_z_r_b_matrix
+    print edge_horizont
+    print edge_vertical
+    print magnitude
+    for x in range(len(magnitude)):
+        for y in range(len(magnitude[x])):
+            if magnitude[x][y] != float(0) and magnitude[x][y] < float(1.5):
+                edgelist.append((x, y))
+    print edgelist
+    tempimage = image.s_z_r_b_matrix
+    for (x,y) in edgelist:
+        tempimage[x][y] = 9
+    print tempimage
+
+
 def noisereduction():
     a = readImages()
     blurred = gaussian_filter(a, sigma=7)
@@ -52,7 +78,7 @@ def nonMaximumSurpression():
     #at every pixel, pixel is checked if it is a local maximum in its neighborhood in the direction of gradient
     return 0
 def main(argv):
-    print "Started"
+    test()
 
 if __name__ == '__main__':
     main(sys.argv)
