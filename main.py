@@ -16,14 +16,13 @@ def main(argv):
     database = []
     queries = []
     os.getcwd()
-
+    #
     # for file in os.listdir("/Users/Tuchman/Dropbox/BC/Fall16/Algorithms/Unsupervised_Image_Clustering/database"):
     #     #print file
     #     x = Image("database/"+file)
     #     database.append(x)
-
-    for file in os.listdir("/Users/Tuchman/Dropbox/BC/Fall16/Algorithms/Unsupervised_Image_Clustering/larger_images"):
-        x = Image("larger_images/"+file)
+    for files in os.listdir("larger_images"):
+        x = Image("larger_images/" + files)
         queries.append(x)
 
 
@@ -32,25 +31,25 @@ def main(argv):
 
 
     for image in queries:
-    #     #print "Name",image.file_name
-    #     # print image.s_z_r_b_matrix
-    #     # print "Area",image.area_
-    #     # print "b_Area",image.b_area_
-    #     # print "Center",image.b_center
-    #     # print "Angle",image.b_radians
-    #     # print "Corner Count", len(image.corners)
-    #     # print "Corners Group Count",len(image.grouped_corners)
-    #     # print "Corner Groups",image.grouped_corners
-    #     #print image.original_matrix
-    #     #print image.zoom()
-        #print image.r_b_matrix
-        print"centered"
-        print image.file_name
-        for line in image.b_centered_matrix:
-            print ' '.join(map(str, line))
-
-    #     print
-
+        print "File Name: " + image.file_name
+        print "original:"
+        for line in image.original_matrix:
+            print ' '.join(map(str,line))
+        # print "blurred:"
+        # for line in image.original_matrix:
+        #     print ' '.join(map(str,line))
+        # print "centered:"
+        # for line in image.b_c_matrix:
+        #     print ' '.join(map(str,line))
+        # print "zoom:"
+        # for line in image.z_b_c_matrix:
+        #     print ' '.join(map(str,line))
+        print"pre rotate:"
+        for line in image.s_z_b_c_matrix:
+            print ' '.join(map(str,line))
+        # print "Final Pre-processed matrix"
+        # for line in  image.r_s_z_b_c_matrix:
+        #     print ' '.join(map(str, line))
 
     # for image in database:
     #     print "Name",image.file_name
