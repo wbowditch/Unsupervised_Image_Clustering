@@ -2,7 +2,6 @@
 import math
 import numpy as np
 from scipy import ndimage
-from scipy.spatial.distance import pdist
 import operator
 from numpy.linalg import svd
 class Image(object):
@@ -59,6 +58,11 @@ class Image(object):
 
         self.grouped_corners = self.buildPockets()
 
+        # img = self.s_z_r_b_matrix
+        # for x,y in self.grouped_corners:
+        #     img[x][y] = 5
+        # print img
+
         self.neighborhoods = self.corner_neighborhood()
 
         self.edges = self.getEdgeList()
@@ -87,9 +91,6 @@ class Image(object):
         # self.west = self.west()
         #print self.matrix
         #self.matrix = self.mean_average_blur()
-    def _pdist(self):
-        Y = pdist(self.s_z_r_b_matrix, 'euclidean')
-        return Y.astype(int)
 
 
     def _create_matrix(self,name): #reads image from textfile into numpy array
@@ -210,7 +211,7 @@ class Image(object):
             score[image] = points
 
         out = []
-        d = dict(sorted(score.iteritems(), key=operator.itemgetter(1), reverse=True)[:k])
+        d = dict(sorted(score.iteritems(), key=operator.itemgetter(1), reverse=True)[:int(k)])
         count = 0
         for key in d:
             out.append(key.file_name)

@@ -1,0 +1,10 @@
+('/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/build/main/setuptools-19.2-py2.7.egg',
+ None,
+ set(['*.py', '*.pyc', '*.pyd', '*.pyo', '*.so', 'EGG-INFO']),
+ 'DATA',
+ [('setuptools/script (dev).tmpl',
+   '/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/build/main/setuptools-19.2-py2.7.egg/setuptools/script (dev).tmpl',
+   'DATA'),
+  ('setuptools/script.tmpl',
+   '/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/build/main/setuptools-19.2-py2.7.egg/setuptools/script.tmpl',
+   'DATA')])

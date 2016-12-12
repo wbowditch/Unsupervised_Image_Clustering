@@ -1,15 +1,11 @@
+#!/usr/bin/env python
 import sys
 import os
 from Image import *
 
 from scipy.optimize import fsolve,brute,fmin
 import numpy as np
-#from skimage import measure
-#from countours import *
-#from scipy import ndimage
-#from scipy import misc
-#from scipy.ndimage.filters import gaussian_filter
-from scipy import ndimage
+
 
 
 """  when you find the image and are trying ot scale it, you calculate the four corners and then find a buffer such that the array is square """
@@ -19,14 +15,14 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir("database"):
+    for file in os.listdir(argv[2]):
         print file
-        x = Image("database/"+file)
+        x = Image(argv[2]+"/"+file)
         database.append(x)
 
-    for file in os.listdir("queries"):
+    for file in os.listdir(argv[1]):
         print file
-        x = Image("queries/"+file)
+        x = Image(argv[1]+"/"+file)
         queries.append(x)
 
 
@@ -79,11 +75,16 @@ def main(argv):
     # hamming_simga3=.9
     # hamming_simga4=.95
 
+    f = open(argv[3]+'/output.txt', 'w')
 
     for image in queries:
         #print image.file_name
-        print image.file_name
-        print image.decisionTree(database)
+        #print image.file_name
+        arr,c = image.decisionTree(database,k=argv[4])
+        line = ' '.join(arr)
+        f.write(image.file_name + line + '\n')
+    f.close()
+
         #Vt = fsolve(image.decisionTree, rranges, args=params)
         #resbrute = brute(image.decisionTree, rranges, args=params, full_output=True,finish=fmin)
         #print resbrute[0]
