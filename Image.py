@@ -26,8 +26,11 @@ class Image(object):
         # print
 
         self.b_radians = self.b_axis_of_least_second_movement()
+        self.b_centered_matrix = self.b_center_matrix()
         self.r_b_matrix = self.rotate_blurred_matrix()
+        self.r_b_center = self.r_b_center_of_area()
 
+        #self.r_b_centered_matrix = self.r_b_center_matrix()
 
         # print "ROTATED"
         # print self.r_b_matrix
@@ -152,33 +155,55 @@ class Image(object):
 
 
 
-
+    def r_b_center_of_area(self):
+        img = self.r_b_matrix
+        r_ = 0
+        c_ = 0
+        for r in range(self.rows):
+            for c in range(self.cols):
+                r_ += r * img[r][c]
+                c_ += c * img[r][c]
+        a = 1. / self.b_area_
+        r_ = r_ * a
+        c_ = c_ * a
+        return int(round(c_)), int(round(r_))
 
 
     def zoom(self):
-        r,c = self.b_center
-        img = self.r_b_matrix
+        #r,c = self.b_center
+        img = self.b_matrix
+        area_of_shape = self.b_area()
+        corners = [self.north(), self.south(), self.west(),self.east()]
+        #print corners[1] - corners[0], corners[3] - corners[2]
+        #print corners
+        temp = img[corners[0]-2:corners[1]+2, corners[2]-2:corners[3]+2]
+        #print "blurred image"
+        #print img
+        #print "attempted zoom"
+        #print temp
+        return img
+
         #print r,c
 
-        side_rows = round((self.b_area_)**.5)
-        side_cols = side_rows
+        #side_rows = round((self.b_area_)**.5)
+        #side_cols = side_rows
         #print "before"
         #print side_cols,side_rows
         #print self.rows,self.cols
 
-        return img
-
-        while self.rows%side_rows !=0: #so that it scaled properly
-            side_rows+=1
-        while self.cols%side_cols !=0: #so that it scaled properly
-            side_cols+=1
-
-        print side_rows,side_cols
-
-        offset_r = side_rows
-        offset_c = side_cols+1
-        x = img[max(0,r-offset_r):min(r+offset_r,self.rows),max(0,c-offset_c):min(self.cols,c+offset_c)]
-        return x
+        # return img
+        #
+        # while self.rows%side_rows !=0: #so that it scaled properly
+        #     side_rows+=1
+        # while self.cols%side_cols !=0: #so that it scaled properly
+        #     side_cols+=1
+        #
+        # print side_rows,side_cols
+        #
+        # offset_r = side_rows
+        # offset_c = side_cols+1
+        # x = img[max(0,r-offset_r):min(r+offset_r,self.rows),max(0,c-offset_c):min(self.cols,c+offset_c)]
+        # return x
 
 
 
@@ -327,25 +352,25 @@ class Image(object):
     def north(self):
         for i in range (self.rows):
             for j in range (self.cols):
-                if self.matrix[i][j] == 1:
+                if self.r_b_matrix[i][j] == 1:
                     return i
 
     def south(self):
         for i in range (self.rows-1, 0, -1):
             for j in range(self.cols-1, 0, -1):
-                if self.matrix[i][j] == 1:
+                if self.r_b_matrix[i][j] == 1:
                     return i
 
     def east(self):
         for i in range (self.cols-1, 0, -1):
             for j in range (self.rows-1, 0, -1):
-                if self.matrix[j][i] == 1:
+                if self.r_b_matrix[j][i] == 1:
                     return j
 
     def west(self):
         for i in range (self.cols):
             for j in range (self.rows):
-                if self.matrix[j][i] == 1:
+                if self.r_b_matrix[j][i] == 1:
                     return j
 
 
@@ -444,9 +469,20 @@ class Image(object):
         #print 1
         return pockets_averaged
 
-
-
-
+    def b_center_matrix(self):
+        r, c = self.b_center_of_area()
+        x_difference = (self.cols/2)-(r)
+        y_difference = (self.rows/2)-(c)
+        centered_matrix = np.copy(self.b_matrix)
+        try:
+            for x in range (self.rows):
+                for y in range(self.cols):
+                    if self.b_matrix[x][y] == 1:
+                        centered_matrix[x+x_difference,y+y_difference],centered_matrix[x, y] = 1,0
+        except IndexError:
+            print("lmao @ ur retarded self @ ")
+            return self.b_matrix
+        return centered_matrix
 
     #
     # def cornerDetectorv3(self,alpha):
@@ -502,13 +538,6 @@ class Image(object):
     #     for x in range(k):
     #         neighbors.append(distances[x][0])
     #     return neighbors
-
-
-
-
-
-
-
 
 
     def intensityMap(self):

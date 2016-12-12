@@ -12,57 +12,64 @@ from scipy import ndimage
 
 """  when you find the image and are trying ot scale it, you calculate the four corners and then find a buffer such that the array is square """
 def main(argv):
-    print argv
+    #print argv
     database = []
     queries = []
     os.getcwd()
 
-    for file in os.listdir("/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/database"):
-        print file
-        x = Image("database/"+file)
-        database.append(x)
+    # for file in os.listdir("/Users/Tuchman/Dropbox/BC/Fall16/Algorithms/Unsupervised_Image_Clustering/database"):
+    #     #print file
+    #     x = Image("database/"+file)
+    #     database.append(x)
 
-    for file in os.listdir("/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/queries"):
-        print file
-        x = Image("queries/"+file)
+    for file in os.listdir("/Users/Tuchman/Dropbox/BC/Fall16/Algorithms/Unsupervised_Image_Clustering/larger_images"):
+        x = Image("larger_images/"+file)
         queries.append(x)
 
 
 
-    for image in queries:
-        print "Name",image.file_name
-        print image.s_z_r_b_matrix
-        print "Area",image.area_
-        print "b_Area",image.b_area_
-        print "Center",image.b_center
-        print "Angle",image.b_radians
-        print "Corner Count", len(image.corners)
-        print "Corners Group Count",len(image.grouped_corners)
-        print "Corner Groups",image.grouped_corners
-        print
-        print
-        print
-        print
 
 
-    for image in database:
-        print "Name",image.file_name
-        print image.s_z_r_b_matrix
-        print "Area",image.area_
-        print "b_Area",image.b_area_
-        print "Center",image.b_center
-        print "Angle",image.b_radians
-        print "Corner Count", len(image.corners)
-        print "Corners Group Count",len(image.grouped_corners)
-        print "Corner Groups",image.grouped_corners
-        print
-        print
-        print
-        print
 
     for image in queries:
-        print "Name",image.file_name
-        print image.decisionTree(database)
+    #     #print "Name",image.file_name
+    #     # print image.s_z_r_b_matrix
+    #     # print "Area",image.area_
+    #     # print "b_Area",image.b_area_
+    #     # print "Center",image.b_center
+    #     # print "Angle",image.b_radians
+    #     # print "Corner Count", len(image.corners)
+    #     # print "Corners Group Count",len(image.grouped_corners)
+    #     # print "Corner Groups",image.grouped_corners
+    #     #print image.original_matrix
+    #     #print image.zoom()
+        #print image.r_b_matrix
+        print"centered"
+        print image.file_name
+        for line in image.b_centered_matrix:
+            print ' '.join(map(str, line))
+
+    #     print
+
+
+    # for image in database:
+    #     print "Name",image.file_name
+    #     print image.s_z_r_b_matrix
+    #     print "Area",image.area_
+    #     print "b_Area",image.b_area_
+    #     print "Center",image.b_center
+    #     print "Angle",image.b_radians
+    #     print "Corner Count", len(image.corners)
+    #     print "Corners Group Count",len(image.grouped_corners)
+    #     print "Corner Groups",image.grouped_corners
+    #     print
+    #     print
+    #     print
+    #     print
+    #
+    # for image in queries:
+    #     print "Name",image.file_name
+    #     print image.decisionTree(database)
 
 
 
