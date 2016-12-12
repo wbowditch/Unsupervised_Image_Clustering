@@ -12,35 +12,81 @@ from scipy import ndimage
 
 """  when you find the image and are trying ot scale it, you calculate the four corners and then find a buffer such that the array is square """
 def main(argv):
-    print argv
-    image_array = []
+    #print argv
+    database = []
+    queries = []
     os.getcwd()
+    #
+    # for file in os.listdir("/Users/Tuchman/Dropbox/BC/Fall16/Algorithms/Unsupervised_Image_Clustering/database"):
+    #     #print file
+    #     x = Image("database/"+file)
+    #     database.append(x)
+    for files in os.listdir("larger_images"):
+        x = Image("larger_images/" + files)
+        queries.append(x)
 
-    for file in os.listdir("/Users/williambowditch/Documents/Algorithims/Unsupervised_Image_Clustering/comparisons"):
-        print file
-        x = Image(os.getcwd()+"/comparisons/"+file)
-        image_array.append(x)
-    i = 0
-    first = image_array[0]
-    print first.matrix
-    b =first.calculate_ratios()
-    a = first.area()
-    print
-    for image in image_array[1:]:
+
+
+
+
+
+    for image in queries:
+        print "File Name: " + image.file_name
+        print "original:"
+        for line in image.original_matrix:
+            print ' '.join(map(str,line))
+        # print "blurred:"
+        # for line in image.original_matrix:
+        #     print ' '.join(map(str,line))
+        # print "centered:"
+        # for line in image.b_c_matrix:
+        #     print ' '.join(map(str,line))
+        # print "zoom:"
+        # for line in image.z_b_c_matrix:
+        #     print ' '.join(map(str,line))
+        print"pre rotate:"
+        for line in image.s_z_b_c_matrix:
+            print ' '.join(map(str,line))
+        # print "Final Pre-processed matrix"
+        # for line in  image.r_s_z_b_c_matrix:
+        #     print ' '.join(map(str, line))
+
+    # for image in database:
+    #     print "Name",image.file_name
+    #     print image.s_z_r_b_matrix
+    #     print "Area",image.area_
+    #     print "b_Area",image.b_area_
+    #     print "Center",image.b_center
+    #     print "Angle",image.b_radians
+    #     print "Corner Count", len(image.corners)
+    #     print "Corners Group Count",len(image.grouped_corners)
+    #     print "Corner Groups",image.grouped_corners
+    #     print
+    #     print
+    #     print
+    #     print
+    #
+    # for image in queries:
+    #     print "Name",image.file_name
+    #     print image.decisionTree(database)
+
+
+
+
         #print image.matrix
         #print image.calculate_ratios()
-        a = image.cornerDetector()
+        #a = image.cornerDetector()
         #print image.createPockets()
         #print a
         #print image.intensityMap()
-        print image.buildPockets()
+        #print image.buildPockets()
         #print a
-        for pair in a:
-            image.matrix[pair[0]][pair[1]] = 5
-        print image.matrix
-        # #rint image.matrix
-        print
-        print
+        # for pair in a:
+        #     image.matrix[pair[0]][pair[1]] = 5
+        # print image.matrix
+        # # #rint image.matrix
+        # print
+        # print
 
 
 
@@ -128,7 +174,7 @@ def main(argv):
     #query_images = readImages(queryPath)
     #database_images = readImages(databasePath)
     #return output_array
-    return image_array
+    #return image_array
 
 if __name__ == '__main__':
     main(sys.argv)
