@@ -34,19 +34,22 @@ def main(argv):
     #     print "Corner Groups", image.grouped_corners
     #     print
     #
-    for image in database:
-        print "Name", image.file_name
-        for shape in image.shapes:
-            print "center"
-            print shape.center
-            print "max_r: {}\tmin_r: {}\tmax_c: {}\tmin_c: {}" .format(shape.max_r, shape.min_r, shape.max_c, shape.min_c)
-            print "centered matrix"
-            for line in shape.centered_matrix:
-                print ' '.join(map(str, line))
-            print "axis of least movement: {}".format(shape.theta)
-            print "rotated matrix"
-            for line in shape.rotated_matrix:
-                print ' '.join(map(str, line))
+    # for image in database:
+    #     print "Name", image.file_name
+    #     for shape in image.shapes:
+    #         print "center"
+    #         print shape.center
+    #         print "max_r: {}\tmin_r: {}\tmax_c: {}\tmin_c: {}" .format(shape.max_r, shape.min_r, shape.max_c, shape.min_c)
+    #         print "centered matrix"
+    #         for line in shape.centered_matrix:
+    #             print ' '.join(map(str, line))
+    #         print "axis of least movement: {}".format(shape.theta)
+    #         print "rotated matrix"
+    #         for line in shape.rotated_matrix:
+    #             print ' '.join(map(str, line))
+    #         print "scaled matrix"
+    #         for line in shape.scaled_matrix:
+    #             print ' '.join(map(str, line))
     # Ryan testing
     # for image in database:
     #     print "File Name: " + image.file_name

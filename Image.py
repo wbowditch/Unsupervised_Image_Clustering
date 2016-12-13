@@ -67,11 +67,11 @@ class Image(object):
         # self.final_area = self.area()
 
         # Extra Features
-        self.corners = self.cornerDetector()
-        self.grouped_corners = self.buildPockets()
-        self.neighborhoods = self.corner_neighborhood()
-        self.edges = self.getEdgeList()
-        self.edge_groups = self.edges_neighborhood()
+        # self.corners = self.cornerDetector()
+        # self.grouped_corners = self.buildPockets()
+        # self.neighborhoods = self.corner_neighborhood()
+        # self.edges = self.getEdgeList()
+        # self.edge_groups = self.edges_neighborhood()
 
         #Check Number of Objects
         #print len(self.objects)
@@ -408,19 +408,19 @@ class Image(object):
         ns_ew = float(north_south)/float(east_west)
         return dy,dx
 
-    def cornerDetector(self):
-        corners = []
-        image_array = self.r_s_z_b_c_matrix
-        rows = self.rows
-        cols = self.cols
-        for i in range(rows):
-            for j in range(cols):
-                if image_array[i][j] == 1:
-                    neighbors = [image_array[x][y] for x in range(max(i-1, 0), min(i+2, rows)) for y in range(max(0, j-1), min(j+2, cols))]
-                    if neighbors.count(0) > 4:
-                        corners.append((i, j))
-        self.corners = corners
-        return corners
+    # def cornerDetector(self):
+    #     corners = []
+    #     image_array = self.r_s_z_b_c_matrix
+    #     rows = self.rows
+    #     cols = self.cols
+    #     for i in range(rows):
+    #         for j in range(cols):
+    #             if image_array[i][j] == 1:
+    #                 neighbors = [image_array[x][y] for x in range(max(i-1, 0), min(i+2, rows)) for y in range(max(0, j-1), min(j+2, cols))]
+    #                 if neighbors.count(0) > 4:
+    #                     corners.append((i, j))
+    #     self.corners = corners
+    #     return corners
 
     def buildPockets_recurse(self, t, corners):
         x,y = t[0], t[1]
@@ -576,6 +576,9 @@ class Shape(object):
         self.size = self.height * self.width
 
         self.clean_matrix = self.cleanMatrix()
+        print "clean matrix"
+        for line in self.clean_matrix:
+            print ' '.join(map(str, line))
 
         self.centered_matrix = self.center_matrix()
 
@@ -583,7 +586,11 @@ class Shape(object):
 
         self.rotated_matrix = self.rotate()
 
-        self.scaled_matrix = self.scale()
+        self.scaled_matrix = self.pad_scaled_matrix()
+
+        print "scaled matrix"
+        for line in self.scaled_matrix:
+            print ' '.join(map(str,line))
 
         self.shape_corners = self.shape_cornerDetector()
 
@@ -613,7 +620,7 @@ class Shape(object):
         clean_matrix = np.zeros((self.rows,self.cols))
         for r,c in self.obj:
             clean_matrix[r][c] = 1
-        return clean_matrix
+        return clean_matrix.astype(int)
 
 
     def shape_cornerDetector(self):
@@ -636,7 +643,6 @@ class Shape(object):
         neighbors.remove((x, y))
         for z, w in neighbors:
             if (z, w) in corners:
-
                 corners.remove((z, w))
                 pocket.extend([(z, w)] + self.buildPockets_recurse((z, w), corners))
         return pocket
@@ -690,25 +696,43 @@ class Shape(object):
     def center_matrix(self):
         r,c = self.center
         big_r, big_c = self.rows/2, self.cols/2
-        y_dist = big_r - r
-        x_dist = big_c - c
-        centered_matrix = np.zeros(self.rows, self.cols)
+        y_dist = int(big_r - r)
+        x_dist = int(big_c - c)
+        if y_dist < self.rows/10. or x_dist < self.cols/10.:
+            return self.clean_matrix
+        centered_matrix = np.zeros([self.rows, self.cols])
         for row,col in self.obj:
             centered_matrix[row+y_dist, col+x_dist] = 1
         self.max_r += y_dist
         self.min_r += y_dist
         self.max_c += x_dist
         self.min_c += x_dist
-        return centered_matrix
+        return centered_matrix.astype(int)
 
 
-
-    def scale(self):
+    def scale_matrix_(self):
         zoomed_img = self.zoom()
-        while zoomed_img.shape[0] <= self.rows or zoomed_img.shape[1] <= self.cols:
-            zoomed_img = np.kron(zoomed_img, np.ones(2,2))
-            zoomed_img = zoomed_img.astype(int)
+        prev_zoom = np.copy(zoomed_img)
+        while zoomed_img.shape[0] < self.rows and zoomed_img.shape[1] < self.cols:
+                zoomed_img = self.scale(zoomed_img)
+        if zoomed_img.shape[0] > self.rows or zoomed_img.shape[1] > self.cols:
+            return prev_zoom
         return zoomed_img
+
+    def pad_scaled_matrix(self):
+        canvas = np.zeros((self.rows, self.cols)).astype(int)
+        scaled_matrix = self.scale_matrix_()
+        y_diff = int((self.rows - scaled_matrix.shape[0])/2)
+        x_diff = int((self.cols - scaled_matrix.shape[1])/2)
+        for r in range(scaled_matrix.shape[0]):
+            for c in range(scaled_matrix.shape[1]):
+                canvas[r+y_diff,c+x_diff] = scaled_matrix[r,c]
+        return canvas
+
+
+    def scale(self, arr):
+        a = np.kron(arr, np.ones((2,2)))
+        return a.astype(int)
 
     def axis_of_least_movement(self):
         a, b, c = 0.0, 0.0, 0.0
@@ -723,7 +747,7 @@ class Shape(object):
         return 0.5 * math.atan(out)
 
     def rotate(self):
-        return ndimage.rotate(self.centered_matrix, -math.degrees(self.theta), reshape = False)
+        return ndimage.rotate(self.centered_matrix, -math.degrees(self.theta), reshape = False).astype(int)
 
     def size_to_area_ratio(self):
         return self.area_*1./self.size
