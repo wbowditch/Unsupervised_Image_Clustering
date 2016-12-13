@@ -133,6 +133,7 @@ class Image(object):
                 for database_shape in database_images.shapes:
                     #print "Database Img: {}" .format(database_images.)
 
+
                     for row in query_shape:
                         print ' '.join(map(str,row))
                     for row in database_shape:
