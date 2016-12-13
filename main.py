@@ -12,10 +12,16 @@ def main(argv):
     os.getcwd()
 
     for file in os.listdir("database"):
+<<<<<<< HEAD
         if not file.startswith('.'):
             #print file
             x = Image("database/"+file)
             database.append(x)
+=======
+        print file
+        x = Image("database/"+file)
+        database.append(x)
+>>>>>>> 51d565dbe2df79ee4c7ea14c8b3d784ed2654bc5
 
 
     for file in os.listdir("queries"):
