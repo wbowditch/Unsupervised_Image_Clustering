@@ -10,35 +10,48 @@ class Image(object):
         self.file_name = file_name.split('/')[-1]
         self.original_matrix = self._create_matrix(file_name)
         self.area_ = self.area()
-        self.rows = self.original_matrix.shape[0]
-        self.cols = self.original_matrix.shape[1]
-        self.size = len(self.original_matrix) * len(self.original_matrix[0])
 
-        # BLUR Image, get area and coordinates of blurred image object
-        self.b_matrix = self.mean_average_blur()
-        self.b_area_ = self.b_area()
-        self.b_center = self.b_center_of_area()
-        self.b_radians = self.b_axis_of_least_second_movement()
-        self.b_c_matrix = self.b_center_matrix()
+        if self.area_==0:
+            self.empty = True
 
-        # Points
-        self.east_point = self.east()
-        self.west_point = self.west()
-        self.north_point = self.north()
-        self.south_point = self.south()
+        else:
+            self.empty = False
 
-        # Zoom
-        self.keep = self.keep_or_not()
-        self.z_b_c_matrix = self.zoom()  # old = self.z_r_b_matrix
-        self.z_rows = self.z_b_c_matrix.shape[0]
-        self.z_cols = self.z_b_c_matrix.shape[1]
-        self.scale_cols = self.cols / self.z_cols
-        self.scale_rows = self.rows / self.z_rows
+            self.rows = self.original_matrix.shape[0]
+            self.cols = self.original_matrix.shape[1]
+            self.size = len(self.original_matrix) * len(self.original_matrix[0])
 
-        # Scale
-        self.s_z_b_c_matrix = self.scale()
-        self.r_s_z_b_c_matrix = self.rotate_blurred_matrix()  # old = self.s_z_r_b_matrix
-        self.final_area = self.area()
+            self.objects = self.findObjects()
+           # if len(self.objects) ==1:
+
+                #Only one object bruh
+
+
+        # # BLUR Image, get area and coordinates of blurred image object
+        # self.b_matrix = self.mean_average_blur()
+        # self.b_area_ = self.b_area()
+        # self.b_center = self.b_center_of_area()
+        # self.b_radians = self.b_axis_of_least_second_movement()
+        # self.b_c_matrix = self.b_center_matrix()
+
+        # # Points
+        # self.east_point = self.east()
+        # self.west_point = self.west()
+        # self.north_point = self.north()
+        # self.south_point = self.south()
+
+        # # Zoom
+        # self.keep = self.keep_or_not()
+        # self.z_b_c_matrix = self.zoom()  # old = self.z_r_b_matrix
+        # self.z_rows = self.z_b_c_matrix.shape[0]
+        # self.z_cols = self.z_b_c_matrix.shape[1]
+        # self.scale_cols = self.cols / self.z_cols
+        # self.scale_rows = self.rows / self.z_rows
+
+        # # Scale
+        # self.s_z_b_c_matrix = self.scale()
+        # self.r_s_z_b_c_matrix = self.rotate_blurred_matrix()  # old = self.s_z_r_b_matrix
+        # self.final_area = self.area()
 
         # Extra Features
         self.corners = self.cornerDetector()
@@ -48,7 +61,6 @@ class Image(object):
         self.edge_groups = self.edges_neighborhood()
 
         #Check Number of Objects
-        self.objects = self.findObjects()
         #print len(self.objects)
 
 
@@ -80,6 +92,11 @@ class Image(object):
         score = {image: 0 for image in database_images}
         for image in database_images:
             points = 0
+
+            if(self.empty and image.empty):
+                points+=1000
+                continue
+
             if abs(self.area_ - image.area_) < area_sigma:
                 points += 2
             else:
@@ -487,9 +504,9 @@ class Image(object):
 
 
     def findObjects(self):
-        total_ones = self.f_area()
+        total_ones = self.area_
         objects = []
-        matrix = np.array(self.r_s_z_b_c_matrix)
+        matrix = np.array(self.original_matrix)
         for r in range(self.rows):
             for c in range(self.cols):
                 if matrix[r][c]==1:
@@ -498,6 +515,49 @@ class Image(object):
                     matrix = new_matrix
                     objects.append(new_object)
                     if(total_ones<=0):
-                        return [obj for obj in objects if len(obj)>2]
+                        return objects
         print " no object"
         return []
+
+
+    def cleanObjects(self):
+        objects = self.objects
+
+
+class Shape(object):
+
+    def __init__(self, matrix,obj):
+        self.obj = obj
+        self.original_matrix = matrix
+        self.area_ = len(obj)
+        self.max_r,self.min_r,self.max_c,self.min_c = self.getSize()
+        self.height = self.max_r-self.min_r
+        self.width = self.max_r - self.min_r
+
+
+
+
+    def getSize(self):
+        obj = self.obj
+        max_r,min_r,max_c,min_c = obj[0][0],obj[0][0],obj[0][1],obj[0][1]
+
+
+        for r,c in obj:
+            if r>max_r:
+                max_r = r
+            if c>max_c:
+                max_c = c
+            if r<min_r:
+                min_r = r
+            if c<min_c:
+                min_c = c
+        return max_r,min_r,max_c,min_c
+
+
+
+
+
+
+
+
+
