@@ -121,6 +121,7 @@ class Image(object):
                      hamming_simga2=.85,
                      hamming_simga3=.9,
                      hamming_simga4=.9,
+                     shape_count = 0,
                      ):  # return k closets neighbors
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
         score = {image: 0 for image in database_images}
@@ -138,15 +139,11 @@ class Image(object):
             else:
                 points -= 1
 
-            if abs(self.b_area_ - image.b_area_) < b_area_sigma:
-                points += 2
+            if abs(len(self.shapes) - len(image.shapes))< shape_count:
+                points +=2
             else:
                 points -= 1
-
-            if euclideanDistance(self.b_center,image.b_center) < center_diff_sigma:
-                points += 2
-            else:
-                points -= 1
+            
 
             if abs(self.b_radians - image.b_radians) == rads_sigma:
                 points += 2
