@@ -12,16 +12,10 @@ def main(argv):
     os.getcwd()
 
     for file in os.listdir("database"):
-<<<<<<< HEAD
         if not file.startswith('.'):
             #print file
             x = Image("database/"+file)
             database.append(x)
-=======
-        print file
-        x = Image("database/"+file)
-        database.append(x)
->>>>>>> 51d565dbe2df79ee4c7ea14c8b3d784ed2654bc5
 
 
     for file in os.listdir("queries"):
@@ -95,7 +89,9 @@ def main(argv):
                 print ' '.join(map(str,row))
             print "Coords: ({},{},{},{})".format(shape.max_r_scale, shape.min_r_scale, shape.max_c_scale, shape.min_c_scale)
             print "height: {}\twidth: {}".format(shape.height_scale, shape.width_scale)
-            #print image.compare(database)
+
+            print image.compare(database)
+
 
 
 if __name__ == '__main__':

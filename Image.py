@@ -128,28 +128,35 @@ class Image(object):
             print "Shape Count Difference", abs(len(self.shapes) - len(image.shapes))
 
             #print "hollow objects Difference", abs(self.hollowObject() - image.hollowObject())
-
             for query_shape in self.shapes:
-                for database_shape in database_images:
-                    #print "Database Img: {}" .format(database_images.)
-                    # for row in database_shape.clean_matrix:
-                    #     print ' '.join(map(str,row))
-                    for row in database_shape.clean_matrix:
-                        print ' '.join(map(str,row))
-                    print "Theta Difference: {}".format( abs(query_shape.theta - database_shape.theta))
-                    thetas.append(abs(query_shape.theta - database_shape.theta))
-                    print "Area Shape Difference: {}" .format(abs(query_shape.area_clean - database_shape.area_clean))
-                    image_areas.append(abs(query_shape.area_clean - database_shape.area_clean))
-                    print "height to width diff: {}".format( abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio()))
-                    h_w_diffs.append(abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio()))
-                    print "size to area diff: {}" .format(abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio()))
-                    s_a_diffs.append(abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio()))
-                    print "hamming clean", abs(query_shape.hamming_distance(query_shape.clean_matrix, database_shape.clean_matrix))
-                    clean_hamming_dists.append(abs(query_shape.hamming_distance(query_shape.clean_matrix, database_shape.clean_matrix)))
-                    print "hamming scaled", abs(query_shape.hamming_distance(query_shape.scaled_matrix, database_shape.scaled_matrix))
-                    post_hamming_dists.append(abs(query_shape.hamming_distance(query_shape.scaled_matrix, database_shape.scaled_matrix)))
+                for images in database_images:
+                    for database_shape in images.shapes:
+                        #print "Database Img: {}" .format(database_images.)
+                        # for row in database_shape.clean_matrix:
+                        #     print ' '.join(map(str,row))
+                        # for row in database_shape.scaled_matrix:
+                        #     print ' '.join(map(str,row))
+                        #print "Theta Difference: {}\tDatabase thet: {}".format( abs(query_shape.theta - database_shape.theta), database_shape.theta)
+                        thetas.append(abs(query_shape.theta - database_shape.theta))
+                        #print "Area Shape Difference: {}\tDatabase Area: {}" .format(abs(query_shape.area_clean - database_shape.area_clean), database_shape.area_clean)
+                        image_areas.append(abs(query_shape.area_clean - database_shape.area_clean))
+                        x = database_shape.height_to_width_ratio()
+                        #print "height to width diff: {}\tDatabase h/w: {}".format( abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio()),x)
+                        h_w_diffs.append(abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio()))
+                        x = database_shape.size_to_area_ratio()
+                        #print "size to area diff: {}\tDatabase s/a: {}" .format(abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio()),x)
+                        s_a_diffs.append(abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio()))
+                        #print "hamming clean: {}".format( abs(query_shape.hamming_distance(query_shape.clean_matrix, database_shape.clean_matrix)))
+                        clean_hamming_dists.append(abs(query_shape.hamming_distance(query_shape.clean_matrix, database_shape.clean_matrix)))
+                        #print "hamming scaled: {}".format( abs(query_shape.hamming_distance(query_shape.scaled_matrix, database_shape.scaled_matrix)))
+                        post_hamming_dists.append(abs(query_shape.hamming_distance(query_shape.scaled_matrix, database_shape.scaled_matrix)))
 
-
+            t = np.array(thetas)
+            area = np.array(image_areas)
+            np.array(h_w_diffs)
+            np.array(s_a_diffs)
+            np.array(clean_hamming_dists)
+            np.array(post_hamming_dists)
                     # neighborhoods1 = query_shape.corner_neighborhood
                     # neighborhoods2 = database_shape.corner_neighborhood
                     # count = 0
@@ -678,6 +685,8 @@ class Shape(object):
         self.rotated_obj = self.rotated_tuples()
 
         self.max_r_rotate,self.min_r_rotate,self.max_c_rotate,self.min_c_rotate = self.getSize(self.rotated_obj)
+        self.height_rotate = self.max_r_rotate - self.min_r_rotate
+        self.width_rotate = self.max_c - self.min_c
 
         self.scaled_matrix = self.pad_scaled_matrix()
 
@@ -907,13 +916,13 @@ class Shape(object):
 
     def size_to_area_ratio(self):
         try:
-            return self.area_scale*1./self.size_scale
+            return self.area_clean*1./self.size_clean
         except ZeroDivisionError:
             return 1
 
     def height_to_width_ratio(self):
         try:
-            return self.height_clean*1./self.width_clean
+            return self.height_rotate*1./self.width_rotate
         except ZeroDivisionError:
             return 1
 
