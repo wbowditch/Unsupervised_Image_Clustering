@@ -13,7 +13,33 @@ database = []
 for file in os.listdir("database"):
     print file
     x = _create_matrix("database/"+file)
-    database.append(x)
+    database.append([x,file])
+
+
+def cleanMatrix(array):
+    clean_matrix = np.zeros((280,280)).astype(int)
+    for r in range(array.shape[0]):
+        for c in range(array.shape[1]):
+            clean_matrix[r][c] = array[r][c]
+    return clean_matrix
+
+for i in range(len(database)):
+    database[i][0] = cleanMatrix(database[i][0])
+
+for pic in database:
+    array,file_name = pic
+    print array.shape
+    file = open("database/"+file_name,'w')
+    file.seek(0)
+    file.truncate()
+    for row in array:
+        line1 = [str(int(x)) for x in row]
+        line = ' '.join(line1)
+        file.write(line + '\n')
+    file.close()
+
+
+
 
 print "row",max(database,key= lambda p : p.shape[0]).shape[0]
 

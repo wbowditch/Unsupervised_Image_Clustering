@@ -67,11 +67,11 @@ class Image(object):
         # self.final_area = self.area()
 
         # Extra Features
-        self.corners = self.cornerDetector()
-        self.grouped_corners = self.buildPockets()
-        self.neighborhoods = self.corner_neighborhood()
-        self.edges = self.getEdgeList()
-        self.edge_groups = self.edges_neighborhood()
+        # self.corners = self.cornerDetector()
+        # self.grouped_corners = self.buildPockets()
+        # self.neighborhoods = self.corner_neighborhood()
+        # self.edges = self.getEdgeList()
+        # self.edge_groups = self.edges_neighborhood()
 
         #Check Number of Objects
         #print len(self.objects)
@@ -123,6 +123,7 @@ class Image(object):
                      hamming_simga3=.9,
                      hamming_simga4=.9,
                      shape_count = 0,
+                     corners_sigma = 10
                      ):  # return k closets neighbors
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
         score = {image: 0 for image in database_images}
@@ -161,7 +162,7 @@ class Image(object):
                     else:
                         points -= 1
 
-                    if abs(query_shape.hamming_distance_postscale(database_shape.r_s_matrix)) >0.8:
+                    if abs(query_shape.hamming_distance_postscale(database_shape.scaled_matrix)) >0.8:
                         points += 2
                     else:
                         points -= 1
@@ -176,6 +177,13 @@ class Image(object):
                             diff = abs(sum(U1 - U2))
                             if diff == 0:
                                 points += 2
+
+                    corners1 = query_shape.shape_grouped_corners
+                    corners2 = database_shape.shape_grouped_corners
+                    for v1 in corners1:
+                        for v2 in corners2:
+                            if abs(euclideanDistance(v1,v2))< corners_sigma:
+                                points+=2
             score[image] = points
         out = []
         d = dict(sorted(score.iteritems(), key=operator.itemgetter(1), reverse=True)[:int(k)])
@@ -563,9 +571,7 @@ class Shape(object):
         self.center = self.centerCoordinates()
         self.max_r,self.min_r,self.max_c,self.min_c = self.getSize()
 
-        self.height = self.max_r-self.min_r
-        self.width = self.max_r - self.min_r
-        self.size = self.height * self.width
+
 
         self.clean_matrix = self.cleanMatrix()
 
@@ -576,11 +582,32 @@ class Shape(object):
         self.rotated_matrix = self.rotate()
 
         self.scaled_matrix = self.scale()
+        print self.scaled_matrix.shape
+        self.obj = self.findObjects()
+        self.scaled_matrix = self.scaleMatrix()
+
+        self.height = self.max_r-self.min_r
+        self.width = self.max_r - self.min_r
+        self.size = self.height * self.width  #THESE ARE ALL
+
+        self.height_to_width = self.height_to_width_ratio()
+
+        self.size_to_area = self.size_to_area_ratio()
+
+        for row in self.scaled_matrix:
+            print row
+
+        print
+        print
+
+
+
+
+
+
 
         self.shape_corners = self.shape_cornerDetector()
-
         self.shape_grouped_corners = self.buildPockets()
-
         self.corner_neighborhood = self.cornerNeighborhood()
 
     def getSize(self):
@@ -602,14 +629,20 @@ class Shape(object):
 
 
     def cleanMatrix(self):
-        clean_matrix = np.zeros((self.rows,self.cols))
+        clean_matrix = np.zeros((self.rows,self.cols)).astype(int)
+        for r,c in self.obj:
+            clean_matrix[r][c] = 1
+        return clean_matrix
+
+    def scaleMatrix(self):
+        clean_matrix = np.zeros((self.rows,self.cols)).astype(int)
         for r,c in self.obj:
             clean_matrix[r][c] = 1
         return clean_matrix
 
 
     def shape_cornerDetector(self):
-        matrix = self.clean_matrix
+        matrix = self.scaled_matrix
         corners = []
         for r,c in self.obj:
             neighbors = [matrix[rn][cn] for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
@@ -617,6 +650,44 @@ class Shape(object):
                 corners.append((r,c))
         return corners
 
+    def objectDFS(self,matrix,v): #DFS? v = (r,c,discovered,value)??? matrix v2 has a discovered 2 object
+    #NO MATRIX CAN BE A COPY, IF 1 ITS NOT DISCOVERED, JUST CHANGE THE VALUE AFTERWARDS LOL
+        object1 = [] #
+        stack = []
+        r,c = v
+        stack.append(v) #BUT WHAT IS V???
+        while stack:
+            v = stack.pop()
+            r,c = v
+            #print stack
+            if(matrix[r][c]==1):  #means undiscovered #1 == discovered, 0 ==undiscovered
+                matrix[r][c] = 0
+                object1.append(v)
+                neighborhood = [(rn,cn) for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
+                neighborhood.remove((r,c))
+                for v1 in neighborhood:
+                    stack.append(v1)
+        #print matrix
+        return object1,matrix,len(object1) #list of all the components of the shape, along with a cleaned up matrix
+
+
+
+
+    def findObjects(self):
+        total_ones = self.scaled_matrix.sum()
+        objects = []
+        matrix = np.array(self.scaled_matrix)
+        for r in range(self.scaled_matrix.shape[0]):
+            for c in range(self.scaled_matrix.shape[1]):
+                if matrix[r][c]==1:
+                    new_object,new_matrix,ones = self.objectDFS(matrix,(r,c))
+                    total_ones = total_ones - ones
+                    matrix = new_matrix
+                    objects.append(new_object)
+                    if(total_ones<=0):
+                        return objects[0]
+        print " no object"
+        return []
 
 
     def buildPockets_recurse(self, t, corners):
@@ -652,8 +723,8 @@ class Shape(object):
             pockets.append(pocket)
         pockets_averaged = []
         for group in pockets:
-            avg_x = sum([p[0] for p in group])/len(group)
-            avg_y = sum([p[1] for p in group])/len(group)
+            avg_x = round(sum([p[0]*1. for p in group])/len(group))
+            avg_y = round(sum([p[1]*1. for p in group])/len(group))
             pockets_averaged.append((avg_x, avg_y))
         return pockets_averaged
 
@@ -684,7 +755,7 @@ class Shape(object):
         big_r, big_c = self.rows/2, self.cols/2
         y_dist = big_r - r
         x_dist = big_c - c
-        centered_matrix = np.zeros(self.rows, self.cols)
+        centered_matrix = np.zeros((self.rows, self.cols))
         for row,col in self.obj:
             centered_matrix[row+y_dist, col+x_dist] = 1
         self.max_r += y_dist
@@ -697,8 +768,9 @@ class Shape(object):
 
     def scale(self):
         zoomed_img = self.zoom()
-        while zoomed_img.shape[0] <= self.rows or zoomed_img.shape[1] <= self.cols:
-            zoomed_img = np.kron(zoomed_img, np.ones(2,2))
+
+        while zoomed_img.shape[0] <= self.rows and zoomed_img.shape[1] <= self.cols:
+            zoomed_img = np.kron(zoomed_img, np.ones((2,2)))
             zoomed_img = zoomed_img.astype(int)
         return zoomed_img
 
@@ -724,7 +796,7 @@ class Shape(object):
     def height_to_width_ratio(self):
         return self.height*1./self.width
 
-    def hamming_distance_prescale(self, arr2):
+    def hamming_distance_prescale(self, arr2):#ARE THEY COMING FROM THE SAME LOCATION?
         img = self.clean_matrix
         shared = 0.0
         for r in range(self.rows):
@@ -734,7 +806,7 @@ class Shape(object):
         return shared/self.size
 
     def hamming_distance_postscale(self, arr2):
-        img = self.r_s_matrix
+        img = self.scaled_matrix
         shared = 0.0
         for r in range(self.rows):
             for c in range(self.cols):
