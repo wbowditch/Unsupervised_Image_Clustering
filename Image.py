@@ -330,7 +330,6 @@ class Image(object):
                     shared+=1
         return shared/self.size
 
-
     def scale(self): #Kronecker product
         a = np.kron(self.z_b_c_matrix, np.ones((self.scale_rows,self.scale_cols)))
         return a.astype(int)
