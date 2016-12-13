@@ -16,46 +16,46 @@ def main(argv):
         x = Image("database/"+file)
         database.append(x)
 
-    for file in os.listdir("queries"):
-        print file
-        x = Image("queries/"+file)
-        queries.append(x)
+    # for file in os.listdir("queries"):
+    #     print file
+    #     x = Image("queries/"+file)
+    #     queries.append(x)
 
-    for image in queries:
-        print "Name", image.file_name
-        print image.r_s_z_b_c_matrix
-        print "Area", image.area_
-        print "b_Area", image.b_area_
-        print "Center", image.b_center
-        print "Angle", image.b_radians
-        print "Corner Count", len(image.corners)
-        print "Corners Group Count", len(image.grouped_corners)
-        print "Corner Groups", image.grouped_corners
-        print
-
-    for image in database:
-        print "Name", image.file_name
-        print image.r_s_z_b_c_matrix
-        print "Area", image.area_
-        print "b_Area", image.b_area_
-        print "Center", image.b_center
-        print "Angle", image.b_radians
-        print "Corner Count", len(image.corners)
-        print "Corners Group Count", len(image.grouped_corners)
-        print "Corner Groups", image.grouped_corners
-        print
+    # for image in queries:
+    #     print "Name", image.file_name
+    #     print image.r_s_z_b_c_matrix
+    #     print "Area", image.area_
+    #     print "b_Area", image.b_area_
+    #     print "Center", image.b_center
+    #     print "Angle", image.b_radians
+    #     print "Corner Count", len(image.corners)
+    #     print "Corners Group Count", len(image.grouped_corners)
+    #     print "Corner Groups", image.grouped_corners
+    #     print
+    #
+    # for image in database:
+    #     print "Name", image.file_name
+    #     print image.r_s_z_b_c_matrix
+    #     print "Area", image.area_
+    #     print "b_Area", image.b_area_
+    #     print "Center", image.b_center
+    #     print "Angle", image.b_radians
+    #     print "Corner Count", len(image.corners)
+    #     print "Corners Group Count", len(image.grouped_corners)
+    #     print "Corner Groups", image.grouped_corners
+    #     print
 
     # Ryan testing
-    for image in queries:
+    for image in database:
         print "File Name: " + image.file_name
         print "original:"
         for line in image.original_matrix:
             print ' '.join(map(str, line))
-        print"pre rotate:"
-        for line in image.s_z_b_c_matrix:
+        print"final"
+        for line in image.r_s_z_b_c_matrix:
             print ' '.join(map(str, line))
 
-    # Decision tree - actual answer
+    #Decision tree - actual answer
     for image in queries:
         print "Name",image.file_name
         print image.decisionTree(database)
