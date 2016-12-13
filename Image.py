@@ -10,11 +10,12 @@ class Image(object):
         self.file_name = file_name.split('/')[-1]
         self.original_matrix = self._create_matrix(file_name)
         self.area_ = self.area()
-
+        self.shapes = []
         if self.area_==0:
             self.empty = True
 
         else:
+
             self.empty = False  #yay it's not blank
 
             self.invert = self.invert_or_not()
@@ -32,6 +33,7 @@ class Image(object):
                 self.cleaned_objects = self.objects
 
             self.shapes = [Shape((self.rows,self.cols),obj) for obj in self.cleaned_objects]
+            #print "HALLLO",len(self.shapes)
 
 
 
@@ -117,11 +119,11 @@ class Image(object):
                      rads_sigma=0.01,
                      scale_cols_sigma=1,
                      scale_rows_sigma=1,
-                     hamming_simga1=.8,
-                     hamming_simga2=.85,
-                     hamming_simga3=.9,
-                     hamming_simga4=.9,
                      shape_count = 0,
+                     h_w_ratio=0.1,
+                     s_a_ratio=0.1,
+                     corners_sigma = 10
+
                      ):  # return k closets neighbors
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
         score = {image: 0 for image in database_images}
@@ -138,7 +140,16 @@ class Image(object):
                 points += 2
             else:
                 points -= 1
-
+            # print dir(image)
+            # print image.shapes
+            # print image.file_name
+            if not image.shapes:
+                print image.file_name
+                print image.area_
+                for row in image.original_matrix:
+                    print row
+                print
+                print
             if abs(len(self.shapes) - len(image.shapes))< shape_count:
                 points +=2
             else:
@@ -147,10 +158,15 @@ class Image(object):
             for query_shape in self.shapes:
                 for database_shape in image.shapes:
 
-                    if abs(query_shape.rads - database_shape.rads) == rads_sigma:
+                    if abs(query_shape.theta - database_shape.theta) == rads_sigma:
                         points += 2
 
-                    if abs(query_shape.height_to_width_ratio_prescale() - image.height_to_width_ratio_prescale()) < h_w_prescale:
+                    if abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio()) < h_w_ratio:
+                        points += 2
+                    else:
+                        points -= 1
+
+                    if abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio()) < s_a_ratio:
                         points += 2
                     else:
                         points -= 1
@@ -582,7 +598,6 @@ class Shape(object):
         self.rotated_matrix = self.rotate()
 
         self.scaled_matrix = self.pad_scaled_matrix()
-        print "hello",self.scaled_matrix.shape
         self.obj = self.findObjects()
 
         #self.scaled_matrix = self.scaleMatrix()
@@ -590,9 +605,7 @@ class Shape(object):
         self.height = self.max_r-self.min_r
         self.width = self.max_r - self.min_r
         self.size = self.height * self.width  #THESE ARE ALL
-        print self.height,self.width,self.size
-        for row in self.scaled_matrix:
-            print row
+
 
         self.height_to_width = self.height_to_width_ratio()
 
@@ -600,8 +613,6 @@ class Shape(object):
 
 
 
-        print
-        print
 
 
 
