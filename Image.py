@@ -38,6 +38,7 @@ class Image(object):
         # Scale
         self.s_z_b_c_matrix = self.scale()
         self.r_s_z_b_c_matrix = self.rotate_blurred_matrix()  # old = self.s_z_r_b_matrix
+        self.final_area = self.area()
 
         # Extra Features
         self.corners = self.cornerDetector()
@@ -45,6 +46,10 @@ class Image(object):
         self.neighborhoods = self.corner_neighborhood()
         self.edges = self.getEdgeList()
         self.edge_groups = self.edges_neighborhood()
+
+        #Check Number of Objects
+        self.objects = self.findObjects()
+        #print len(self.objects)
 
 
     def _create_matrix(self,name):  # Reads image from textfile into numpy array
@@ -239,6 +244,9 @@ class Image(object):
 
     def area(self):
         return self.original_matrix.sum()
+
+    def f_area(self):
+        return self.r_s_z_b_c_matrix.sum()
 
     def b_center_of_area(self):  # Returns estimated center of object
         img = self.b_matrix
@@ -454,3 +462,42 @@ class Image(object):
                 if magnitude[x][y] != float(0):
                     edgelist.append((x, y))
         return edgelist
+
+    def objectDFS(self,matrix,v): #DFS? v = (r,c,discovered,value)??? matrix v2 has a discovered 2 object
+    #NO MATRIX CAN BE A COPY, IF 1 ITS NOT DISCOVERED, JUST CHANGE THE VALUE AFTERWARDS LOL
+        object1 = [] #
+        stack = []
+        r,c = v
+        stack.append(v) #BUT WHAT IS V???
+        while stack:
+            v = stack.pop()
+            r,c = v
+            #print stack
+            if(matrix[r][c]==1):  #means undiscovered #1 == discovered, 0 ==undiscovered
+                matrix[r][c] = 0
+                object1.append(v)
+                neighborhood = [(rn,cn) for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
+                neighborhood.remove((r,c))
+                for v1 in neighborhood:
+                    stack.append(v1)
+        #print matrix
+        return object1,matrix,len(object1) #list of all the components of the shape, along with a cleaned up matrix
+
+
+
+
+    def findObjects(self):
+        total_ones = self.f_area()
+        objects = []
+        matrix = np.array(self.r_s_z_b_c_matrix)
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if matrix[r][c]==1:
+                    new_object,new_matrix,ones = self.objectDFS(matrix,(r,c))
+                    total_ones = total_ones - ones
+                    matrix = new_matrix
+                    objects.append(new_object)
+                    if(total_ones<=0):
+                        return [obj for obj in objects if len(obj)>2]
+        print " no object"
+        return []
