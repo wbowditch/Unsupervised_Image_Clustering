@@ -117,6 +117,7 @@ class Image(object):
                      rads_sigma=0.01,
                      scale_cols_sigma=1,
                      scale_rows_sigma=1,
+                     h_w_prescale = 0.1,
                      hamming_simga1=.8,
                      hamming_simga2=.85,
                      hamming_simga3=.9,
@@ -143,47 +144,38 @@ class Image(object):
                 points +=2
             else:
                 points -= 1
-            
 
-            if abs(self.b_radians - image.b_radians) == rads_sigma:
-                points += 2
-            else:
-                points -= 1
+            for query_shape in self.shapes:
+                for database_shape in image.shapes:
 
-            if abs(self.scale_cols - image.scale_cols) < scale_cols_sigma:
-                points += 2
-            else:
-                points -= 1
-
-            if abs(self.scale_rows - image.scale_rows) < scale_rows_sigma:
-                points += 2
-            else:
-                points -= 1
-
-            if self.hamming_distance4(image.r_s_z_b_c_matrix) > hamming_simga1:
-                points += 2
-            else:
-                points -= 1
-
-            if self.hamming_distance4(image.r_s_z_b_c_matrix) > hamming_simga2:
-                points += 2
-            else:
-                points -= 1
-
-            if self.hamming_distance4(image.r_s_z_b_c_matrix) > hamming_simga3:
-                points += 3
-
-            if self.hamming_distance4(image.r_s_z_b_c_matrix) > hamming_simga4:
-                points += 4
-            c = 0
-            for neighborhood1 in self.neighborhoods:
-                U1 = svd(neighborhood1,compute_uv=False)
-                for neighborhood2 in image.neighborhoods:
-                    U2 = svd(neighborhood2,compute_uv=False)
-                    diff = abs(sum(U1 - U2))
-                    if diff == 0:
+                    if abs(query_shape.rads - database_shape.rads) == rads_sigma:
                         points += 2
-                        c += 1
+
+                    if abs(query_shape.height_to_width_ratio_prescale() - image.height_to_width_ratio_prescale()) < h_w_prescale:
+                        points += 2
+                    else:
+                        points -= 1
+
+                    if abs(query_shape.hamming_distance_prescale(database_shape.clean_matrix)) >0.8:
+                        points += 2
+                    else:
+                        points -= 1
+
+                    if abs(query_shape.hamming_distance_postscale(database_shape.r_s_matrix)) >0.8:
+                        points += 2
+                    else:
+                        points -= 1
+
+                    neighborhoods1 = query_shape.corner_neighborhood
+                    neighborhoods2 = database_shape.corner_neighborhood
+
+                    for neighborhood1 in neighborhoods1:
+                        U1 = svd(neighborhood1,compute_uv=False)
+                        for neighborhood2 in neighborhoods2:
+                            U2 = svd(neighborhood2,compute_uv=False)
+                            diff = abs(sum(U1 - U2))
+                            if diff == 0:
+                                points += 2
             score[image] = points
         out = []
         d = dict(sorted(score.iteritems(), key=operator.itemgetter(1), reverse=True)[:int(k)])
@@ -683,3 +675,21 @@ class Shape(object):
 
     def height_to_width_ratio(self):
         return self.height*1./self.width
+
+    def hamming_distance_prescale(self, arr2):
+        img = self.clean_matrix
+        shared = 0.0
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if img[r][c] == arr2[r][c]:
+                    shared += 1
+        return shared/self.size
+
+    def hamming_distance_postscale(self, arr2):
+        img = self.r_s_matrix
+        shared = 0.0
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if img[r][c] == arr2[r][c]:
+                    shared += 1
+        return shared/self.size
