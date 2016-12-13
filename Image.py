@@ -663,7 +663,7 @@ class Shape(object):
 
 
     def cornerNeighborhood(self):
-        corners = self.grouped_corners
+        corners = self.shape_grouped_corners
         img = self.clean_matrix
         neighborhoods = []
         for r,c in corners:
@@ -681,10 +681,21 @@ class Shape(object):
 
 
     def zoom(self):
-        return np.copy(self.original_matrix)[self.min_r : self.max_r + 1, self.min_c : self.max_c + 1]
+        return np.copy(self.clean_matrix[self.min_r : self.max_r + 1, self.min_c : self.max_c + 1])
+
+    def center(self):
+        r,c = self.center
+        big_r, big_c = self.rows/2, self.cols/2
+        y_dist = big_r - r
+        x_dist = big_c - c
+        centered_matrix = np.zeros(self.rows, self.cols)
+        for y,x in self.obj:
+            centered_matrix[y+y_dist, x+x_dist] = 1
+        return centered_matrix
+
 
     def size_to_area_ratio(self):
-        return self.area*1./self.size
+        return self.area_*1./self.size
 
 
     def height_to_width_ratio(self):
