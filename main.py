@@ -11,9 +11,9 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir("larger_images"):
+    for file in os.listdir("database"):
         print file
-        x = Image("larger_images/"+file)
+        x = Image("database/"+file)
         database.append(x)
 
 

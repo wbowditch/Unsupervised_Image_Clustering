@@ -26,7 +26,7 @@ class Image(object):
             self.size = self.rows*self.cols
 
             self.objects = self.findObjects()
-            if len(self.objects) !=1:
+            if len(self.objects) != 1:
                 self.cleaned_objects = self.cleanObjects()
             else:
                 self.cleaned_objects = self.objects
