@@ -15,14 +15,27 @@ class Image(object):
             self.empty = True
 
         else:
-            self.empty = False
+            self.empty = False  #yay it's not blank
 
-            self.rows = self.original_matrix.shape[0]
-            self.cols = self.original_matrix.shape[1]
-            self.size = len(self.original_matrix) * len(self.original_matrix[0])
+            self.invert = self.invert_or_not()
+            if(self.invert):
+                self.original_matrix = self.invert_matrix()
+                self.area_ = self.area()
+
+            self.rows,self.cols = self.original_matrix.shape
+            self.size = self.rows*self.cols
 
             self.objects = self.findObjects()
-            if len(self.objects) ==1:
+            if len(self.objects) !=1:
+                self.cleaned_objects = self.cleanObjects()
+            else:
+                self.cleaned_objects = self.objects
+
+            self.shapes = [Shape((self.rows,self.cols),obj) for obj in self.cleaned_objects]
+
+
+
+
 
                 #Only one object bruh
 
@@ -76,6 +89,27 @@ class Image(object):
         return ndimage.rotate(self.s_z_b_c_matrix, -math.degrees(rads),reshape=False)
 
 
+    def invert_or_not(self):
+        outer_sum = 0
+        outer_sum += self.original_matrix[0].sum()
+        outer_sum += self.original_matrix[-1].sum()
+        outer_sum += self.original_matrix[:, 0].sum()
+        outer_sum += self.original_matrix[:, -1].sum()
+        size = (self.original_matrix.shape[0] + self.original_matrix.shape[1]) * 2
+        if outer_sum >= int(size)/2.:
+            return True
+        else:
+            return False
+
+    def invert_matrix(self):
+        if self.has_inverted_matrix:
+            inverted_matrix = []
+            for i in range(self.rows):
+                inverted_matrix.append(1-self.original_matrix[i])
+            return np.array(inverted_matrix)
+
+
+
     def decisionTree(self, database_images,k=9,
                      area_sigma=30,
                      b_area_sigma=30,
@@ -90,11 +124,13 @@ class Image(object):
                      ):  # return k closets neighbors
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
         score = {image: 0 for image in database_images}
+
         for image in database_images:
             points = 0
-
-            if(self.empty and image.empty):
-                points+=1000
+            if(self.empty):
+                if(image.empty):  #only select other blank images
+                    points+=1000
+                score[image] = points
                 continue
 
             if abs(self.area_ - image.area_) < area_sigma:
@@ -522,20 +558,26 @@ class Image(object):
 
     def cleanObjects(self):
         objects = self.objects
+        cleaned = []
+        for obj in objects:
+            if len(obj)> 0.05*min(self.rows,self.cols) && len(obj)>1:
+                cleaned.append(obj)
+        return cleaned
 
 
 class Shape(object):
 
-    def __init__(self, matrix,obj):
+    def __init__(self, shape,obj):
         self.obj = obj
-        self.original_matrix = matrix
-        self.rows, self.cols = matrix.shape
+        #self.original_matrix = matrix
+        self.rows, self.cols = shape
         self.area_ = len(obj)
         self.center = self.centerCoordinates()
         self.max_r,self.min_r,self.max_c,self.min_c = self.getSize()
 
         self.height = self.max_r-self.min_r
         self.width = self.max_r - self.min_r
+        self.size = self.height * self.width
 
         self.clean_matrix = self.cleanMatrix()
 
@@ -564,7 +606,7 @@ class Shape(object):
 
 
     def cleanMatrix(self):
-        clean_matrix = np.zeros(self.original_matrix.shape)
+        clean_matrix = np.zeros((self.rows,self.cols))
         for r,c in self.obj:
             clean_matrix[r][c] = 1
         return clean_matrix
@@ -637,12 +679,10 @@ class Shape(object):
         group = self.obj
         return round(sum([p[0]*1. for p in group])/len(group)), round(sum([p[1]*1. for p in group])/len(group))
 
-    
+
+    def size_to_area_ratio(self):
+        return self.area*1./self.size
 
 
-
-
-
-
-
-
+    def height_to_width_ratio(self):
+        return self.height*1./self.width
