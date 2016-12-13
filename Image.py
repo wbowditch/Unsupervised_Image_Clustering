@@ -529,7 +529,9 @@ class Shape(object):
     def __init__(self, matrix,obj):
         self.obj = obj
         self.original_matrix = matrix
+        self.rows, self.cols = matrix.shape
         self.area_ = len(obj)
+        self.center = self.centerCoordinates()
         self.max_r,self.min_r,self.max_c,self.min_c = self.getSize()
 
         self.height = self.max_r-self.min_r
@@ -537,13 +539,15 @@ class Shape(object):
 
         self.clean_matrix = self.cleanMatrix()
 
+        self.shape_corners = self.shape_cornerDetector()
 
+        self.shape_grouped_corners = self.buildPockets()
 
-
-
+        self.corner_neighborhood = self.cornerNeighborhood()
 
     def getSize(self):
         obj = self.obj
+
         max_r,min_r,max_c,min_c = obj[0][0],obj[0][0],obj[0][1],obj[0][1]
 
 
@@ -564,6 +568,78 @@ class Shape(object):
         for r,c in self.obj:
             clean_matrix[r][c] = 1
         return clean_matrix
+
+
+    def shape_cornerDetector(self):
+        matrix = self.clean_matrix
+        corners = []
+        for r,c in self.obj:
+            neighbors = [matrix[rn][cn] for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
+            if neighbors.count(0)>4:
+                corners.append((r,c))
+        return corners
+
+
+
+    def buildPockets_recurse(self, t, corners):
+        x,y = t[0], t[1]
+        if len(corners) == 0:
+            return []
+        pocket = []
+        neighbors = [(a, b) for a in range(x-2, x+3) for b in range(y-2, y+3)]  # Grab the nearest corners
+        neighbors.remove((x, y))
+        for z, w in neighbors:
+            if (z, w) in corners:
+
+                corners.remove((z, w))
+                pocket.extend([(z, w)] + self.buildPockets_recurse((z, w), corners))
+        return pocket
+
+    def buildPockets(self):
+        pockets = []
+        corners = list(self.shape_corners)
+        getKey = lambda a : math.sqrt(a[0]**2+a[1]**2)
+        corners = sorted(corners, key=getKey)
+        for i in range(len(self.shape_corners)):
+            if not corners:
+                break
+            x, y = corners.pop(0)  # Pop off the first corner
+            pocket = [(x, y)]
+            neighbors = [(a, b) for a in range(x-2, x+3) for b in range(y-2, y+3)]  # Grab the nearest corners
+            neighbors.remove((x, y))
+            for z, w in neighbors:
+                if (z, w) in corners:
+                    corners.remove((z, w))
+                    pocket.extend([(z, w)] + self.buildPockets_recurse((z, w), corners))
+            pockets.append(pocket)
+        pockets_averaged = []
+        for group in pockets:
+            avg_x = sum([p[0] for p in group])/len(group)
+            avg_y = sum([p[1] for p in group])/len(group)
+            pockets_averaged.append((avg_x, avg_y))
+        return pockets_averaged
+
+
+    def cornerNeighborhood(self):
+        corners = self.grouped_corners
+        img = self.clean_matrix
+        neighborhoods = []
+        for r,c in corners:
+            try:
+                neighborhood = np.array([img[a][b] for a in range(r-2,r+3) for b in range(c-2,c+3)]).reshape((5,5))
+            except IndexError:
+                continue
+            neighborhoods.append(neighborhood)
+        return neighborhoods
+
+
+    def centerCoordinates(self):  # Returns estimated center of object
+        group = self.obj
+        return round(sum([p[0]*1. for p in group])/len(group)), round(sum([p[1]*1. for p in group])/len(group))
+
+    
+
+
 
 
 
