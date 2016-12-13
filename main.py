@@ -36,6 +36,7 @@ def main(argv):
     #     print "Corner Groups", image.grouped_corners
     #     print
     #
+
     # for image in database:
     #     print "Name", image.file_name
     #     for shape in image.shapes:
@@ -52,6 +53,7 @@ def main(argv):
     #         print "scaled matrix"
     #         for line in shape.scaled_matrix:
     #             print ' '.join(map(str, line))
+
     # Ryan testing
     # for image in database:
     #     print "File Name: " + image.file_name
@@ -65,7 +67,7 @@ def main(argv):
     #Decision tree - actual answer
     for image in queries:
         print "Name",image.file_name
-        print image.decisionTree(database)
+        print image.compare(database)
 
 
 if __name__ == '__main__':
