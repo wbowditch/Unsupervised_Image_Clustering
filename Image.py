@@ -22,7 +22,7 @@ class Image(object):
             self.size = len(self.original_matrix) * len(self.original_matrix[0])
 
             self.objects = self.findObjects()
-           # if len(self.objects) ==1:
+            if len(self.objects) ==1:
 
                 #Only one object bruh
 
@@ -531,8 +531,13 @@ class Shape(object):
         self.original_matrix = matrix
         self.area_ = len(obj)
         self.max_r,self.min_r,self.max_c,self.min_c = self.getSize()
+
         self.height = self.max_r-self.min_r
         self.width = self.max_r - self.min_r
+
+        self.clean_matrix = self.cleanMatrix()
+
+
 
 
 
@@ -554,7 +559,11 @@ class Shape(object):
         return max_r,min_r,max_c,min_c
 
 
-
+    def cleanMatrix(self):
+        clean_matrix = np.zeros(self.original_matrix.shape)
+        for r,c in self.obj:
+            clean_matrix[r][c] = 1
+        return clean_matrix
 
 
 
