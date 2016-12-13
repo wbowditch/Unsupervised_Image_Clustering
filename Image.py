@@ -637,7 +637,9 @@ class Shape(object):
         group = self.obj
         return round(sum([p[0]*1. for p in group])/len(group)), round(sum([p[1]*1. for p in group])/len(group))
 
-    
+
+    def zoom(self):
+        return np.copy(self.original_matrix)[self.min_r : self.max_r + 1, self.min_c : self.max_c + 1]
 
 
 
