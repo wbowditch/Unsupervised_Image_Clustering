@@ -9,57 +9,85 @@ class Image(object):
     def __init__(self, file_name, rows=0, cols=0):
         self.file_name = file_name.split('/')[-1]
         self.original_matrix = self._create_matrix(file_name)
-        self.rows = self.original_matrix.shape[0]
-        self.cols = self.original_matrix.shape[1]
-        self.size = len(self.original_matrix) * len(self.original_matrix[0])
-        self.has_inverted_matrix = self.invert_or_not()
-        if self.has_inverted_matrix:
-            self.original_matrix = self.invert_matrix()
         self.area_ = self.area()
-        # BLUR Image, get area and coordinates of blurred image object
-        self.b_matrix = self.mean_average_blur()
-        self.b_area_ = self.b_area()
-        self.b_center = self.b_center_of_area()
-        self.b_radians = self.b_axis_of_least_second_movement()
-        self.b_c_matrix = self.b_center_matrix()
 
-        # Points
-        self.east_point = self.east()
-        self.west_point = self.west()
-        self.north_point = self.north()
-        self.south_point = self.south()
+        if self.area_==0:
+            self.empty = True
 
-        # Zoom
-        self.keep = self.keep_or_not()
-        self.z_b_c_matrix = self.zoom()  # old = self.z_r_b_matrix
-        self.z_rows = self.z_b_c_matrix.shape[0]
-        self.z_cols = self.z_b_c_matrix.shape[1]
-        self.scale_cols = self.cols / self.z_cols
-        self.scale_rows = self.rows / self.z_rows
+        else:
+            self.empty = False  #yay it's not blank
 
-        # Scale
-        self.s_z_b_c_matrix = self.scale()
-        self.r_s_z_b_c_matrix = self.rotate_blurred_matrix()  # old = self.s_z_r_b_matrix
-        self.final_area = self.area()
+            self.invert = self.invert_or_not()
+            if(self.invert):
+                self.original_matrix = self.invert_matrix()
+                self.area_ = self.area()
+
+            self.rows,self.cols = self.original_matrix.shape
+            self.size = self.rows*self.cols
+
+            self.objects = self.findObjects()
+            if len(self.objects) != 1:
+                self.cleaned_objects = self.cleanObjects()
+            else:
+                self.cleaned_objects = self.objects
+
+            self.shapes = [Shape((self.rows,self.cols),obj) for obj in self.cleaned_objects]
+
+
+
+
+
+                #Only one object bruh
+
+
+        # # BLUR Image, get area and coordinates of blurred image object
+        # self.b_matrix = self.mean_average_blur()
+        # self.b_area_ = self.b_area()
+        # self.b_center = self.b_center_of_area()
+        # self.b_radians = self.b_axis_of_least_second_movement()
+        # self.b_c_matrix = self.b_center_matrix()
+
+        # # Points
+        # self.east_point = self.east()
+        # self.west_point = self.west()
+        # self.north_point = self.north()
+        # self.south_point = self.south()
+
+        # # Zoom
+        # self.keep = self.keep_or_not()
+        # self.z_b_c_matrix = self.zoom()  # old = self.z_r_b_matrix
+        # self.z_rows = self.z_b_c_matrix.shape[0]
+        # self.z_cols = self.z_b_c_matrix.shape[1]
+        # self.scale_cols = self.cols / self.z_cols
+        # self.scale_rows = self.rows / self.z_rows
+
+        # # Scale
+        # self.s_z_b_c_matrix = self.scale()
+        # self.r_s_z_b_c_matrix = self.rotate_blurred_matrix()  # old = self.s_z_r_b_matrix
+        # self.final_area = self.area()
 
         # Extra Features
-        self.corners = self.cornerDetector()
-        self.grouped_corners = self.buildPockets()
-        self.neighborhoods = self.corner_neighborhood()
-        self.edges = self.getEdgeList()
-        self.edge_groups = self.edges_neighborhood()
+        # self.corners = self.cornerDetector()
+        # self.grouped_corners = self.buildPockets()
+        # self.neighborhoods = self.corner_neighborhood()
+        # self.edges = self.getEdgeList()
+        # self.edge_groups = self.edges_neighborhood()
 
         #Check Number of Objects
-        self.objects = self.findObjects()
         #print len(self.objects)
 
 
     def _create_matrix(self,name):  # Reads image from textfile into numpy array
-        file = open(name, 'r')
+        file = open(name,'r')
         array = []
         for line in file:
             array.append([int(x) for x in line.split(" ")])
         return np.array(array)
+
+    def rotate_blurred_matrix(self):
+        rads = self.b_radians
+        return ndimage.rotate(self.s_z_b_c_matrix, -math.degrees(rads),reshape=False)
+
 
     def invert_or_not(self):
         outer_sum = 0
@@ -82,12 +110,6 @@ class Image(object):
 
 
 
-
-    def rotate_blurred_matrix(self):
-        rads = self.b_radians
-        return ndimage.rotate(self.s_z_b_c_matrix, -math.degrees(rads),reshape=False)
-
-
     def decisionTree(self, database_images,k=9,
                      area_sigma=30,
                      b_area_sigma=30,
@@ -99,25 +121,29 @@ class Image(object):
                      hamming_simga2=.85,
                      hamming_simga3=.9,
                      hamming_simga4=.9,
+                     shape_count = 0,
                      ):  # return k closets neighbors
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
         score = {image: 0 for image in database_images}
+
         for image in database_images:
             points = 0
+            if(self.empty):
+                if(image.empty):  #only select other blank images
+                    points+=1000
+                score[image] = points
+                continue
+
             if abs(self.area_ - image.area_) < area_sigma:
                 points += 2
             else:
                 points -= 1
 
-            if abs(self.b_area_ - image.b_area_) < b_area_sigma:
-                points += 2
+            if abs(len(self.shapes) - len(image.shapes))< shape_count:
+                points +=2
             else:
                 points -= 1
-
-            if euclideanDistance(self.b_center,image.b_center) < center_diff_sigma:
-                points += 2
-            else:
-                points -= 1
+            
 
             if abs(self.b_radians - image.b_radians) == rads_sigma:
                 points += 2
@@ -338,6 +364,9 @@ class Image(object):
                     shared+=1
         return shared/self.size
 
+
+
+
     def scale(self): #Kronecker product
         a = np.kron(self.z_b_c_matrix, np.ones((self.scale_rows,self.scale_cols)))
         return a.astype(int)
@@ -367,7 +396,7 @@ class Image(object):
                     return i-2
 
     def keep_or_not(self):
-        if self.north_point < 0 or self.south_point > self.rows or self.west_point < 0 or self.east_point > self.cols or self.south_point-self.north_point > self.rows or self.east_point-self.west_point > self.cols:
+        if self.north_point < 0 or self.south_point > self.rows or self.west_point < 0 or self.east_point > self.cols or self.south_point-self.north_point > self.rows or self.east_point-self.west_point:
             return False
         else:
             return True
@@ -379,19 +408,19 @@ class Image(object):
         ns_ew = float(north_south)/float(east_west)
         return dy,dx
 
-    def cornerDetector(self):
-        corners = []
-        image_array = self.r_s_z_b_c_matrix
-        rows = self.rows
-        cols = self.cols
-        for i in range(rows):
-            for j in range(cols):
-                if image_array[i][j] == 1:
-                    neighbors = [image_array[x][y] for x in range(max(i-1, 0), min(i+2, rows)) for y in range(max(0, j-1), min(j+2, cols))]
-                    if neighbors.count(0) > 4:
-                        corners.append((i, j))
-        self.corners = corners
-        return corners
+    # def cornerDetector(self):
+    #     corners = []
+    #     image_array = self.r_s_z_b_c_matrix
+    #     rows = self.rows
+    #     cols = self.cols
+    #     for i in range(rows):
+    #         for j in range(cols):
+    #             if image_array[i][j] == 1:
+    #                 neighbors = [image_array[x][y] for x in range(max(i-1, 0), min(i+2, rows)) for y in range(max(0, j-1), min(j+2, cols))]
+    #                 if neighbors.count(0) > 4:
+    #                     corners.append((i, j))
+    #     self.corners = corners
+    #     return corners
 
     def buildPockets_recurse(self, t, corners):
         x,y = t[0], t[1]
@@ -435,7 +464,7 @@ class Image(object):
         r, c = self.b_center_of_area()
         y_difference = (self.rows/2) - r
         x_difference = (self.cols/2) - c
-        if x_difference < self.cols/10. and y_difference < self.rows/10.:
+        if x_difference == 0 and y_difference == 0:
             return self.b_matrix
         centered_matrix = np.copy(self.b_matrix)
         for x in range(self.rows):
@@ -508,9 +537,9 @@ class Image(object):
 
 
     def findObjects(self):
-        total_ones = self.f_area()
+        total_ones = self.area_
         objects = []
-        matrix = np.array(self.r_s_z_b_c_matrix)
+        matrix = np.array(self.original_matrix)
         for r in range(self.rows):
             for c in range(self.cols):
                 if matrix[r][c]==1:
@@ -519,6 +548,209 @@ class Image(object):
                     matrix = new_matrix
                     objects.append(new_object)
                     if(total_ones<=0):
-                        return [obj for obj in objects if len(obj)>2]
+                        return objects
         print " no object"
         return []
+
+
+    def cleanObjects(self):
+        objects = self.objects
+        cleaned = []
+        for obj in objects:
+            if len(obj)> 0.05*min(self.rows,self.cols) and len(obj)>1:
+                cleaned.append(obj)
+        return cleaned
+
+
+class Shape(object):
+
+    def __init__(self, shape,obj):
+        self.obj = obj
+        self.rows, self.cols = shape
+        self.area_ = len(obj)
+        self.center = self.centerCoordinates()
+        self.max_r,self.min_r,self.max_c,self.min_c = self.getSize()
+
+        self.height = self.max_r-self.min_r
+        self.width = self.max_r - self.min_r
+        self.size = self.height * self.width
+
+        self.clean_matrix = self.cleanMatrix()
+        print "clean matrix"
+        for line in self.clean_matrix:
+            print ' '.join(map(str, line))
+
+        self.centered_matrix = self.center_matrix()
+
+        self.theta = self.axis_of_least_movement()
+
+        self.rotated_matrix = self.rotate()
+
+        self.scaled_matrix = self.pad_scaled_matrix()
+
+        print "scaled matrix"
+        for line in self.scaled_matrix:
+            print ' '.join(map(str,line))
+
+        self.shape_corners = self.shape_cornerDetector()
+
+        self.shape_grouped_corners = self.buildPockets()
+
+        self.corner_neighborhood = self.cornerNeighborhood()
+
+    def getSize(self):
+        obj = self.obj
+
+        max_r,min_r,max_c,min_c = obj[0][0],obj[0][0],obj[0][1],obj[0][1]
+
+
+        for r,c in obj:
+            if r>max_r:
+                max_r = r
+            if c>max_c:
+                max_c = c
+            if r<min_r:
+                min_r = r
+            if c<min_c:
+                min_c = c
+        return max_r,min_r,max_c,min_c
+
+
+    def cleanMatrix(self):
+        clean_matrix = np.zeros((self.rows,self.cols))
+        for r,c in self.obj:
+            clean_matrix[r][c] = 1
+        return clean_matrix.astype(int)
+
+
+    def shape_cornerDetector(self):
+        matrix = self.clean_matrix
+        corners = []
+        for r,c in self.obj:
+            neighbors = [matrix[rn][cn] for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
+            if neighbors.count(0)>4:
+                corners.append((r,c))
+        return corners
+
+
+
+    def buildPockets_recurse(self, t, corners):
+        x,y = t[0], t[1]
+        if len(corners) == 0:
+            return []
+        pocket = []
+        neighbors = [(a, b) for a in range(x-2, x+3) for b in range(y-2, y+3)]  # Grab the nearest corners
+        neighbors.remove((x, y))
+        for z, w in neighbors:
+            if (z, w) in corners:
+                corners.remove((z, w))
+                pocket.extend([(z, w)] + self.buildPockets_recurse((z, w), corners))
+        return pocket
+
+    def buildPockets(self):
+        pockets = []
+        corners = list(self.shape_corners)
+        getKey = lambda a : math.sqrt(a[0]**2+a[1]**2)
+        corners = sorted(corners, key=getKey)
+        for i in range(len(self.shape_corners)):
+            if not corners:
+                break
+            x, y = corners.pop(0)  # Pop off the first corner
+            pocket = [(x, y)]
+            neighbors = [(a, b) for a in range(x-2, x+3) for b in range(y-2, y+3)]  # Grab the nearest corners
+            neighbors.remove((x, y))
+            for z, w in neighbors:
+                if (z, w) in corners:
+                    corners.remove((z, w))
+                    pocket.extend([(z, w)] + self.buildPockets_recurse((z, w), corners))
+            pockets.append(pocket)
+        pockets_averaged = []
+        for group in pockets:
+            avg_x = sum([p[0] for p in group])/len(group)
+            avg_y = sum([p[1] for p in group])/len(group)
+            pockets_averaged.append((avg_x, avg_y))
+        return pockets_averaged
+
+
+    def cornerNeighborhood(self):
+        corners = self.shape_grouped_corners
+        img = self.clean_matrix
+        neighborhoods = []
+        for r,c in corners:
+            try:
+                neighborhood = np.array([img[a][b] for a in range(r-2,r+3) for b in range(c-2,c+3)]).reshape((5,5))
+            except IndexError:
+                continue
+            neighborhoods.append(neighborhood)
+        return neighborhoods
+
+
+    def centerCoordinates(self):  # Returns estimated center of object
+        group = self.obj
+        return round(sum([p[0]*1. for p in group])/len(group)), round(sum([p[1]*1. for p in group])/len(group))
+
+
+    def zoom(self):
+        return np.copy(self.clean_matrix[self.min_r : self.max_r + 1, self.min_c : self.max_c + 1])
+
+    def center_matrix(self):
+        r,c = self.center
+        big_r, big_c = self.rows/2, self.cols/2
+        y_dist = int(big_r - r)
+        x_dist = int(big_c - c)
+        if math.sqrt(big_r**2*big_c**2)-math.sqrt(r**2 * c**2) < (self.rows*self.cols)/10.:
+            return self.clean_matrix
+        centered_matrix = np.zeros([self.rows, self.cols])
+        for row,col in self.obj:
+            centered_matrix[row+y_dist, col+x_dist] = 1
+        self.max_r += y_dist
+        self.min_r += y_dist
+        self.max_c += x_dist
+        self.min_c += x_dist
+        return centered_matrix.astype(int)
+
+
+    def scale_matrix_(self):
+        zoomed_img = self.zoom()
+        prev_zoom = zoomed_img
+        while zoomed_img.shape[0] < self.rows and zoomed_img.shape[1] < self.cols:
+                prev_zoom = zoomed_img
+                zoomed_img = self.scale(zoomed_img)
+        if zoomed_img.shape[0] > self.rows or zoomed_img.shape[1] > self.cols:
+            return prev_zoom
+        return zoomed_img
+
+    def pad_scaled_matrix(self):
+        canvas = np.zeros((self.rows, self.cols)).astype(int)
+        scaled_matrix = self.scale_matrix_()
+        y_diff = int((self.rows - scaled_matrix.shape[0])/2)
+        x_diff = int((self.cols - scaled_matrix.shape[1])/2)
+        for r in range(scaled_matrix.shape[0]):
+            for c in range(scaled_matrix.shape[1]):
+                canvas[r+y_diff,c+x_diff] = scaled_matrix[r,c]
+        return canvas
+
+    def scale(self, arr):
+        a = np.kron(arr, np.ones((2,2)))
+        return a.astype(int)
+
+    def axis_of_least_movement(self):
+        a, b, c = 0.0, 0.0, 0.0
+        img = self.centered_matrix
+        r_ , c_ = self.rows/2, self.cols/2
+        for r in range(self.rows):
+            for c in range(self.cols):
+                a += (r - r_) * (c - c_) * img[r][c]
+                b += (r - r_) ** 2 * img[r][c]
+                c += (c - c_) ** 2 * img[r][c]
+        out = 2. * a / (b - c)
+        return 0.5 * math.atan(out)
+
+    def rotate(self):
+        return ndimage.rotate(self.centered_matrix, -math.degrees(self.theta), reshape = False).astype(int)
+
+    def size_to_area_ratio(self):
+        return self.area_*1./self.size
+
+    def height_to_width_ratio(self):
+        return self.height*1./self.width
