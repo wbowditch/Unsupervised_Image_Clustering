@@ -11,18 +11,18 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir("database"):
+    for file in os.listdir("compare/ones"):
         if not file.startswith('.'):
             print file
-            x = Image("database/"+file)
+            x = Image("compare/ones/"+file)
             database.append(x)
 
 
-    for file in os.listdir("queries"):
-        if not file.startswith('.'):
-            print file
-            x = Image("queries/"+file)
-            queries.append(x)
+    # for file in os.listdir("queries"):
+    #     if not file.startswith('.'):
+    #         print file
+    #         x = Image("queries/"+file)
+    #         queries.append(x)
 
     # for image in queries:
     #     print "Name", image.file_name
@@ -63,9 +63,11 @@ def main(argv):
     #         print ' '.join(map(str, line))
 
     #Decision tree - actual answer
-    for image in queries:
-        print "Name",image.file_name
-        print image.decisionTree(database)
+    print database[0].compare(database)
+    # for image in queries:
+    #     print "Name",image.file_name
+    #     print image.original_matrix
+    #     print image.compare(database)
 
 
 if __name__ == '__main__':
