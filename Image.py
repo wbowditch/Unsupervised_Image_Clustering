@@ -557,7 +557,7 @@ class Image(object):
         objects = self.objects
         cleaned = []
         for obj in objects:
-            if len(obj)> 0.05*min(self.rows,self.cols) && len(obj)>1:
+            if len(obj)> 0.05*min(self.rows,self.cols) and len(obj)>1:
                 cleaned.append(obj)
         return cleaned
 
@@ -566,7 +566,6 @@ class Shape(object):
 
     def __init__(self, shape,obj):
         self.obj = obj
-        #self.original_matrix = matrix
         self.rows, self.cols = shape
         self.area_ = len(obj)
         self.center = self.centerCoordinates()
@@ -577,6 +576,14 @@ class Shape(object):
         self.size = self.height * self.width
 
         self.clean_matrix = self.cleanMatrix()
+
+        self.centered_matrix = self.center_matrix()
+
+        self.theta = self.axis_of_least_movement()
+
+        self.rotated_matrix = self.rotate()
+
+        self.scaled_matrix = self.scale()
 
         self.shape_corners = self.shape_cornerDetector()
 
@@ -680,16 +687,43 @@ class Shape(object):
     def zoom(self):
         return np.copy(self.clean_matrix[self.min_r : self.max_r + 1, self.min_c : self.max_c + 1])
 
-    def center(self):
+    def center_matrix(self):
         r,c = self.center
         big_r, big_c = self.rows/2, self.cols/2
         y_dist = big_r - r
         x_dist = big_c - c
         centered_matrix = np.zeros(self.rows, self.cols)
-        for y,x in self.obj:
-            centered_matrix[y+y_dist, x+x_dist] = 1
+        for row,col in self.obj:
+            centered_matrix[row+y_dist, col+x_dist] = 1
+        self.max_r += y_dist
+        self.min_r += y_dist
+        self.max_c += x_dist
+        self.min_c += x_dist
         return centered_matrix
 
+
+
+    def scale(self):
+        zoomed_img = self.zoom()
+        while zoomed_img.shape[0] <= self.rows or zoomed_img.shape[1] <= self.cols:
+            zoomed_img = np.kron(zoomed_img, np.ones(2,2))
+            zoomed_img = zoomed_img.astype(int)
+        return zoomed_img
+
+    def axis_of_least_movement(self):
+        a, b, c = 0.0, 0.0, 0.0
+        img = self.centered_matrix
+        r_ , c_ = self.rows/2, self.cols/2
+        for r in range(self.rows):
+            for c in range(self.cols):
+                a += (r - r_) * (c - c_) * img[r][c]
+                b += (r - r_) ** 2 * img[r][c]
+                c += (c - c_) ** 2 * img[r][c]
+        out = 2. * a / (b - c)
+        return 0.5 * math.atan(out)
+
+    def rotate(self):
+        return ndimage.rotate(self.centered_matrix, -math.degrees(self.theta), reshape = False)
 
     def size_to_area_ratio(self):
         return self.area_*1./self.size
