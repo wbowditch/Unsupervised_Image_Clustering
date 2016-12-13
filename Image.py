@@ -555,7 +555,7 @@ class Image(object):
         objects = self.objects
         cleaned = []
         for obj in objects:
-            if len(obj)> 0.05*min(self.rows,self.cols) and len(obj)>1:
+            if len(obj)> 0.05*min(self.rows,self.cols) and len(obj)>4:
                 cleaned.append(obj)
         return cleaned
 
@@ -581,21 +581,24 @@ class Shape(object):
 
         self.rotated_matrix = self.rotate()
 
-        self.scaled_matrix = self.scale()
-        print self.scaled_matrix.shape
+        self.scaled_matrix = self.pad_scaled_matrix()
+        print "hello",self.scaled_matrix.shape
         self.obj = self.findObjects()
-        self.scaled_matrix = self.scaleMatrix()
+
+        #self.scaled_matrix = self.scaleMatrix()
 
         self.height = self.max_r-self.min_r
         self.width = self.max_r - self.min_r
         self.size = self.height * self.width  #THESE ARE ALL
+        print self.height,self.width,self.size
+        for row in self.scaled_matrix:
+            print row
 
         self.height_to_width = self.height_to_width_ratio()
 
         self.size_to_area = self.size_to_area_ratio()
 
-        for row in self.scaled_matrix:
-            print row
+
 
         print
         print
@@ -719,8 +722,8 @@ class Shape(object):
             pockets.append(pocket)
         pockets_averaged = []
         for group in pockets:
-            avg_x = round(sum([p[0]*1. for p in group])/len(group))
-            avg_y = round(sum([p[1]*1. for p in group])/len(group))
+            avg_x = int(round(sum([p[0]*1. for p in group])/len(group)))
+            avg_y = int(round(sum([p[1]*1. for p in group])/len(group)))
             pockets_averaged.append((avg_x, avg_y))
         return pockets_averaged
 
@@ -731,6 +734,7 @@ class Shape(object):
         neighborhoods = []
         for r,c in corners:
             try:
+                print r,c
                 neighborhood = np.array([img[a][b] for a in range(r-2,r+3) for b in range(c-2,c+3)]).reshape((5,5))
             except IndexError:
                 continue
@@ -740,7 +744,7 @@ class Shape(object):
 
     def centerCoordinates(self):  # Returns estimated center of object
         group = self.obj
-        return round(sum([p[0]*1. for p in group])/len(group)), round(sum([p[1]*1. for p in group])/len(group))
+        return int(round(sum([p[0]*1. for p in group])/len(group))), int(round(sum([p[1]*1. for p in group])/len(group)))
 
 
     def zoom(self):
@@ -803,11 +807,17 @@ class Shape(object):
         return ndimage.rotate(self.centered_matrix, -math.degrees(self.theta), reshape = False).astype(int)
 
     def size_to_area_ratio(self):
-        return self.area_*1./self.size
+        try:
+            return self.area_*1./self.size
+        except ZeroDivisionError:
+            return 1
 
 
     def height_to_width_ratio(self):
-        return self.height*1./self.width
+        try:
+            return self.height*1./self.width
+        except ZeroDivisionError:
+            return 1
 
     def hamming_distance_prescale(self, arr2):#ARE THEY COMING FROM THE SAME LOCATION?
         img = self.clean_matrix
