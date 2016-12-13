@@ -153,10 +153,30 @@ class Image(object):
 
             t = np.array(thetas)
             area = np.array(image_areas)
-            np.array(h_w_diffs)
-            np.array(s_a_diffs)
-            np.array(clean_hamming_dists)
-            np.array(post_hamming_dists)
+            h_W = np.array(h_w_diffs)
+            s_a = np.array(s_a_diffs)
+            ham = np.array(clean_hamming_dists)
+            p_ham = np.array(post_hamming_dists)
+            std_t = np.std(t)
+            std_area = np.std(area)
+            std_h_w = np.std(h_W)
+            std_ham = np.std(ham)
+            std_p_ham = np.std(p_ham)
+            std_devs = [
+                np.std(t,dtype=np.float64),
+                np.std(area,dtype=np.float64),
+                np.std(h_W,dtype=np.float64),
+                np.std(ham,dtype=np.float64),
+                np.std(p_ham,dtype=np.float64)
+            ]
+            means = [
+                np.mean(t, dtype=np.float64),
+                np.mean(area, dtype=np.float64),
+                np.mean(h_W, dtype=np.float64),
+                np.mean(ham, dtype=np.float64),
+                np.mean(p_ham, dtype=np.float64)
+            ]
+            return std_devs, means
                     # neighborhoods1 = query_shape.corner_neighborhood
                     # neighborhoods2 = database_shape.corner_neighborhood
                     # count = 0
