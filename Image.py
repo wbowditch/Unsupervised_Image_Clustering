@@ -9,11 +9,13 @@ class Image(object):
     def __init__(self, file_name, rows=0, cols=0):
         self.file_name = file_name.split('/')[-1]
         self.original_matrix = self._create_matrix(file_name)
-        self.area_ = self.area()
         self.rows = self.original_matrix.shape[0]
         self.cols = self.original_matrix.shape[1]
         self.size = len(self.original_matrix) * len(self.original_matrix[0])
-
+        self.has_inverted_matrix = self.invert_or_not()
+        if self.has_inverted_matrix:
+            self.original_matrix = self.invert_matrix()
+        self.area_ = self.area()
         # BLUR Image, get area and coordinates of blurred image object
         self.b_matrix = self.mean_average_blur()
         self.b_area_ = self.b_area()
@@ -53,11 +55,33 @@ class Image(object):
 
 
     def _create_matrix(self,name):  # Reads image from textfile into numpy array
-        file = open(name,'r')
+        file = open(name, 'r')
         array = []
         for line in file:
             array.append([int(x) for x in line.split(" ")])
         return np.array(array)
+
+    def invert_or_not(self):
+        outer_sum = 0
+        outer_sum += self.original_matrix[0].sum()
+        outer_sum += self.original_matrix[-1].sum()
+        outer_sum += self.original_matrix[:, 0].sum()
+        outer_sum += self.original_matrix[:, -1].sum()
+        size = (self.original_matrix.shape[0] + self.original_matrix.shape[1]) * 2
+        if outer_sum >= int(size)/2.:
+            return True
+        else:
+            return False
+
+    def invert_matrix(self):
+        if self.has_inverted_matrix:
+            inverted_matrix = []
+            for i in range(self.rows):
+                inverted_matrix.append(1-self.original_matrix[i])
+            return np.array(inverted_matrix)
+
+
+
 
     def rotate_blurred_matrix(self):
         rads = self.b_radians
@@ -314,9 +338,6 @@ class Image(object):
                     shared+=1
         return shared/self.size
 
-
-
-
     def scale(self): #Kronecker product
         a = np.kron(self.z_b_c_matrix, np.ones((self.scale_rows,self.scale_cols)))
         return a.astype(int)
@@ -346,7 +367,7 @@ class Image(object):
                     return i-2
 
     def keep_or_not(self):
-        if self.north_point < 0 or self.south_point > self.rows or self.west_point < 0 or self.east_point > self.cols or self.south_point-self.north_point > self.rows or self.east_point-self.west_point:
+        if self.north_point < 0 or self.south_point > self.rows or self.west_point < 0 or self.east_point > self.cols or self.south_point-self.north_point > self.rows or self.east_point-self.west_point > self.cols:
             return False
         else:
             return True
@@ -414,7 +435,7 @@ class Image(object):
         r, c = self.b_center_of_area()
         y_difference = (self.rows/2) - r
         x_difference = (self.cols/2) - c
-        if x_difference == 0 and y_difference == 0:
+        if x_difference < self.cols/10. and y_difference < self.rows/10.:
             return self.b_matrix
         centered_matrix = np.copy(self.b_matrix)
         for x in range(self.rows):
