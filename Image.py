@@ -755,7 +755,7 @@ class Shape(object):
         big_r, big_c = self.rows/2, self.cols/2
         y_dist = int(big_r - r)
         x_dist = int(big_c - c)
-        if y_dist < self.rows/10. or x_dist < self.cols/10.:
+        if math.sqrt(big_r**2*big_c**2)-math.sqrt(r**2 * c**2) < (self.rows*self.cols)/10.:
             return self.clean_matrix
         centered_matrix = np.zeros([self.rows, self.cols])
         for row,col in self.obj:
@@ -769,8 +769,9 @@ class Shape(object):
 
     def scale_matrix_(self):
         zoomed_img = self.zoom()
-        prev_zoom = np.copy(zoomed_img)
+        prev_zoom = zoomed_img
         while zoomed_img.shape[0] < self.rows and zoomed_img.shape[1] < self.cols:
+                prev_zoom = zoomed_img
                 zoomed_img = self.scale(zoomed_img)
         if zoomed_img.shape[0] > self.rows or zoomed_img.shape[1] > self.cols:
             return prev_zoom
@@ -785,7 +786,6 @@ class Shape(object):
             for c in range(scaled_matrix.shape[1]):
                 canvas[r+y_diff,c+x_diff] = scaled_matrix[r,c]
         return canvas
-
 
     def scale(self, arr):
         a = np.kron(arr, np.ones((2,2)))
@@ -811,7 +811,6 @@ class Shape(object):
             return self.area_*1./self.size
         except ZeroDivisionError:
             return 1
-
 
     def height_to_width_ratio(self):
         try:
