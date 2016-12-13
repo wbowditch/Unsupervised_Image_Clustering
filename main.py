@@ -13,14 +13,14 @@ def main(argv):
 
     for file in os.listdir("database"):
         if not file.startswith('.'):
-            print file
+            #print file
             x = Image("database/"+file)
             database.append(x)
 
 
     for file in os.listdir("queries"):
         if not file.startswith('.'):
-            print file
+            #print file
             x = Image("queries/"+file)
             queries.append(x)
 
@@ -66,8 +66,30 @@ def main(argv):
 
     #Decision tree - actual answer
     for image in queries:
-        print "Name",image.file_name
-        print image.compare(database)
+        print "Name:\t{}".format(image.file_name)
+        print
+        for shape in image.shapes:
+            for row in shape.clean_matrix:
+                print ' '.join(map(str, row))
+            print "Coords: ({},{},{},{})".format(shape.max_r,shape.min_r,shape.max_c,shape.min_c)
+            print "height: {}\twidth: {}".format(shape.height_clean,shape.width_clean)
+            print
+            print "Centered"
+            for row in shape.centered_matrix:
+                print ' '.join(map(str,row))
+            print
+            print "rotate"
+            for row in shape.rotated_matrix:
+                print ' '.join(map(str, row))
+            print
+            print "Coords: ({},{},{},{})".format(shape.max_r_rotate, shape.min_r_rotate, shape.max_c_rotate, shape.min_c_rotate)
+            print
+            print "scaled"
+            for row in shape.scaled_matrix:
+                print ' '.join(map(str,row))
+            print "Coords: ({},{},{},{})".format(shape.max_r_scale, shape.min_r_scale, shape.max_c_scale, shape.min_c_scale)
+            print "height: {}\twidth: {}".format(shape.height_scale, shape.width_scale)
+            #print image.compare(database)
 
 
 if __name__ == '__main__':
