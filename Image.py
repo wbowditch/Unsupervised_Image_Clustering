@@ -117,7 +117,7 @@ class Image(object):
         euclideanDistance = lambda a, b: math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
         thetas, image_areas, h_w_diffs, s_a_diffs, clean_hamming_dists, post_hamming_dists = [], [], [], [], [], []
         for image in database_images:
-            print image.original_matrix
+            #print image.original_matrix
             if (self.empty):
                 if (image.empty):  # only select other blank images
                     print "image", image.file_name, "is empty"
@@ -130,13 +130,11 @@ class Image(object):
             #print "hollow objects Difference", abs(self.hollowObject() - image.hollowObject())
 
             for query_shape in self.shapes:
-                for database_shape in database_images.shapes:
+                for database_shape in database_images:
                     #print "Database Img: {}" .format(database_images.)
-
-
-                    for row in query_shape.clean_matrix:
-                        print ' '.join(map(str,row))
-                    for row in database_shape:
+                    # for row in database_shape.clean_matrix:
+                    #     print ' '.join(map(str,row))
+                    for row in database_shape.clean_matrix:
                         print ' '.join(map(str,row))
                     print "Theta Difference: {}".format( abs(query_shape.theta - database_shape.theta))
                     thetas.append(abs(query_shape.theta - database_shape.theta))
@@ -150,33 +148,35 @@ class Image(object):
                     clean_hamming_dists.append(abs(query_shape.hamming_distance(query_shape.clean_matrix, database_shape.clean_matrix)))
                     print "hamming scaled", abs(query_shape.hamming_distance(query_shape.scaled_matrix, database_shape.scaled_matrix))
                     post_hamming_dists.append(abs(query_shape.hamming_distance(query_shape.scaled_matrix, database_shape.scaled_matrix)))
-                    neighborhoods1 = query_shape.corner_neighborhood
-                    neighborhoods2 = database_shape.corner_neighborhood
-                    count = 0
-                    for neighborhood1 in neighborhoods1:
-                        U1 = svd(neighborhood1, compute_uv=False)
-                        for neighborhood2 in neighborhoods2:
 
-                            U2 = svd(neighborhood2, compute_uv=False)
-                            diff = abs(sum(U1 - U2))
-                            print neighborhood1
-                            print neighborhood2
-                            print diff
-                            print
-                            print
-                            if diff == 0:
-                                count += 1
-                    print "Neighbors in common:", count
 
-                    corners1 = query_shape.shape_grouped_corners
-                    corners2 = database_shape.shape_grouped_corners
-                    count = 0
-                    corner_min = 100000000
-                    for v1 in corners1:
-                        for v2 in corners2:
-                            if abs(euclideanDistance(v1, v2)) < corner_min:
-                                corner_min = abs(euclideanDistance(v1, v2))
-                    print "min corner", corner_min
+                    # neighborhoods1 = query_shape.corner_neighborhood
+                    # neighborhoods2 = database_shape.corner_neighborhood
+                    # count = 0
+                    # for neighborhood1 in neighborhoods1:
+                    #     U1 = svd(neighborhood1, compute_uv=False)
+                    #     for neighborhood2 in neighborhoods2:
+                    #
+                    #         U2 = svd(neighborhood2, compute_uv=False)
+                    #         diff = abs(sum(U1 - U2))
+                    #         print neighborhood1
+                    #         print neighborhood2
+                    #         print diff
+                    #         print
+                    #         print
+                    #         if diff == 0:
+                    #             count += 1
+                    # print "Neighbors in common:", count
+                    #
+                    # corners1 = query_shape.shape_grouped_corners
+                    # corners2 = database_shape.shape_grouped_corners
+                    # count = 0
+                    # corner_min = 100000000
+                    # for v1 in corners1:
+                    #     for v2 in corners2:
+                    #         if abs(euclideanDistance(v1, v2)) < corner_min:
+                    #             corner_min = abs(euclideanDistance(v1, v2))
+                    # print "min corner", corner_min
                     # print "Corners:",count
 
 
@@ -685,8 +685,10 @@ class Shape(object):
 
         #self.scaled_matrix = self.scaleMatrix()
         self.area_scale = len(obj)
-        self.height_scale = self.max_r-self.min_r
-        self.width_scale = self.max_r - self.min_r
+        self.max_r_scale,self.min_r_scale,self.max_c_scale,self.min_c_scale = self.getSize(self.obj)
+
+        self.height_scale = self.max_r_scale-self.min_r_scale
+        self.width_scale = self.max_r_scale - self.min_r_scale
 
         self.size_scale = self.height_scale * self.width_scale  #THESE ARE ALL
 
@@ -905,7 +907,7 @@ class Shape(object):
 
     def size_to_area_ratio(self):
         try:
-            return self.area_clean*1./self.size_clean
+            return self.area_scale*1./self.size_scale
         except ZeroDivisionError:
             return 1
 
