@@ -11,10 +11,12 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir("compare/ones"):
+    for file in os.listdir("compare/bones"):
         if not file.startswith('.'):
             print file
-            x = Image("compare/ones/"+file)
+            x = Image("compare/bones/"+file)
+            #print x.shapes[0].shape_corners
+            print "initialize",file
             database.append(x)
 
 
@@ -63,7 +65,40 @@ def main(argv):
     #         print ' '.join(map(str, line))
 
     #Decision tree - actual answer
-    print database[0].compare(database)
+    for image in database:
+        shape = image.shapes[0]
+        #corners2 = shape.shape_corners
+        print image.file_name
+        #print image.original_matrix
+        print shape.clean_matrix.sum()
+        print shape.scaled_matrix.sum()
+        print "size",shape.size_scale
+        print "area", shape.area_scale
+
+        print "area/size",shape.area_to_size
+        print "height/width",shape.height_to_width_ratio() #height / width
+        file = open("compare/outputs/"+image.file_name,'w')
+        for row in shape.zoomed_matrix:
+            line1 = [str(int(x)) for x in row]
+            line = ' '.join(line1)
+            file.write(line + '\n')
+        file.close()
+        #print shape.scaled_matrix
+        #for rc, in shape.scaled_matrix
+
+        #corners = shape.shape_grouped_corners
+        #print shape.scaled_matrix
+       # matrix = shape.scaled_matrix.copy()
+        #for r,c in corners:
+         #   matrix[r][c] = 5
+        #print matrix
+
+        #print shape.max_r_rotate, shape.min_r_rotate, shape.max_c_rotate, shape.min_c_rotate
+        #print shape.height_scale
+        #print shape.width_scale
+        #print shape.height_to_width_ratio()
+
+    #print database[0].compare(database)
     # for image in queries:
     #     print "Name",image.file_name
     #     print image.original_matrix

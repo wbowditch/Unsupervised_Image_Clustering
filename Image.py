@@ -9,9 +9,13 @@ class Image(object):
     def __init__(self, file_name, rows=0, cols=0):
         self.file_name = file_name.split('/')[-1]
         self.original_matrix = self._create_matrix(file_name)
+        print self.original_matrix.shape
         self.area_ = self.area()
+        print self.area_
         self.shapes = []
+        print "hello",self.file_name
         if self.area_==0:
+            print "its empty"
             self.empty = True
 
         else:
@@ -19,6 +23,7 @@ class Image(object):
             self.empty = False  #yay it's not blank
 
             self.invert = self.invert_or_not()
+            print self.invert
             if(self.invert):
                 self.original_matrix = self.invert_matrix()
                 self.area_ = self.area()
@@ -27,6 +32,7 @@ class Image(object):
             self.size = self.rows*self.cols
 
             self.objects = self.findObjects()
+            print len(self.objects)
             if len(self.objects) != 1:
                 self.cleaned_objects = self.cleanObjects()
             else:
@@ -83,6 +89,8 @@ class Image(object):
         file = open(name,'r')
         array = []
         for line in file:
+            a = [int(x) for x in line.split(" ")]
+            #print sum(a)
             array.append([int(x) for x in line.split(" ")])
         return np.array(array)
 
@@ -690,71 +698,56 @@ class Shape(object):
     def __init__(self, shape,obj):
         self.obj = obj
         self.rows, self.cols = shape
-        self.area_ = len(obj)
-        self.area_f = len(obj)
-        self.center = self.centerCoordinates2()
-
-
-        self.max_r,self.min_r,self.max_c,self.min_c = self.getSize()
+        self.area_clean = len(obj)
+        self.center = self.centerCoordinates(self.obj)
+        self.max_r,self.min_r,self.max_c,self.min_c = self.getSize(self.obj)
+        self.height_clean = self.max_r - self.min_r
+        self.width_clean = self.max_c - self.min_c
+        self.size_clean = self.height_clean * self.width_clean
 
         self.clean_matrix = self.cleanMatrix()
 
         self.centered_matrix = self.center_matrix()
+        self.centered_obj = self.centered_tuples()
 
-
-
-
-
-        self.center = self.centerCoordinates()
+        self.center = self.centerCoordinates(self.centered_obj)
 
         self.theta = self.axis_of_least_movement()
-        print self.centered_matrix
-        self.rotated_matrix = self.rotate()
-        print self.rotated_matrix
 
-        self.scaled_matrix = self.pad_scaled_matrix().astype(int)
-        print self.scaled_matrix
+        if(self.theta >-0.3 and self.theta<0.3):
+            self.theta = 0
+
+        self.rotated_matrix = self.rotate()
+
+        self.rotated_obj = self.rotated_tuples()
+
+        self.max_r_rotate,self.min_r_rotate,self.max_c_rotate,self.min_c_rotate = self.getSize(self.rotated_obj)
+
+        self.scaled_matrix = self.pad_scaled_matrix()
+
         self.obj = self.findObjects()
 
-        self.max_r,self.min_r,self.max_c,self.min_c = self.getSize()
-
-        # self.height = self.max_r-self.min_r
-        # self.width = self.max_c - self.min_c
-        # self.size = self.height * self.width
-
-        #new_matrix = self.scaled_matrix.copy()
-
-
-
         #self.scaled_matrix = self.scaleMatrix()
+        self.area_scale = len(obj)
+        #self.max_r_rotate_scale, self.min_r_rotate_scale,self.max_c_rotate_scale,self.min_c_rotate_scale = self.getSize(self.obj)
 
-        self.height = self.max_r-self.min_r
-        self.width = self.max_r - self.min_r
-        self.size = self.height * self.width  #THESE ARE ALL
-        print "SELF SIZE", self.size
+        self.height_scale = self.max_r_rotate-self.min_r_rotate # height after rotation, before scale
+        self.width_scale = self.max_c_rotate - self.min_c_rotate #width after rotation, before scale
 
+        self.size_scale = self.height_scale * self.width_scale  #THESE ARE ALL
 
         self.height_to_width = self.height_to_width_ratio()
 
-        self.size_to_area = self.size_to_area_ratio()
-
-
-
-
-
-
-
-
-
+        self.area_to_size = self.area_to_size_ratio()
 
         self.shape_corners = self.shape_cornerDetector()
+        print "number of corners",len(self.shape_corners)
 
-        self.shape_grouped_corners = self.buildPockets()
+        self.shape_grouped_corners = self.buildPocketsv2()
 
         self.corner_neighborhood = self.cornerNeighborhood()
 
-    def getSize(self):
-        obj = self.obj
+    def getSize(self,obj):
 
         max_r,min_r,max_c,min_c = obj[0][0],obj[0][0],obj[0][1],obj[0][1]
 
@@ -779,7 +772,7 @@ class Shape(object):
 
 
     def shape_cornerDetector(self):
-        matrix = self.scaled_matrix
+        matrix = self.clean_matrix
         corners = []
         for r,c in self.obj:
             neighbors = [matrix[rn][cn] for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
@@ -866,13 +859,29 @@ class Shape(object):
         return pockets_averaged
 
 
+    def buildPocketsv2(self): #new version of build pockets
+        corners = self.shape_corners  #get dem corners, there could be 8000
+        if corners:
+            corner_nw, corner_ne, corner_sw, corner_se = corners[0],corners[0],corners[0],corners[0]
+            for r,c in corners:
+                if r<corner_nw[0] and c<corner_nw[1]:
+                    corner_nw = r,c
+                if r<corner_ne[0] and c>corner_ne[1]:
+                    corner_ne = r,c
+                if r>corner_sw[0] and c<corner_sw[1]:
+                    corner_sw = r,c
+                if r>corner_se[0] and c>corner_se[1]:
+                    corner_se = r,c
+            return [corner_nw,corner_ne,corner_sw,corner_se]
+        return []
+
+
     def cornerNeighborhood(self):
         corners = self.shape_grouped_corners
-        img = self.clean_matrix
+        img = self.scaled_matrix
         neighborhoods = []
         for r,c in corners:
             try:
-                print r,c
                 neighborhood = np.array([img[a][b] for a in range(r-2,r+3) for b in range(c-2,c+3)]).reshape((5,5))
             except IndexError:
                 continue
@@ -880,45 +889,46 @@ class Shape(object):
         return neighborhoods
 
 
-    def centerCoordinates2(self):  # Returns estimated center of object
-        group = self.obj
+    def centerCoordinates(self,group):  # Returns estimated center of object
         return int(round(sum([p[0]*1. for p in group])/len(group))), int(round(sum([p[1]*1. for p in group])/len(group)))
-
-    def centerCoordinates(self):  # Returns estimated center of object
-        img = self.centered_matrix
-        r_ = 0
-        c_ = 0
-        for r in range(self.rows):
-            for c in range(self.cols):
-                r_ += r*img[r][c]
-                c_ += c*img[r][c]
-        try:
-            a = 1./len(self.obj)
-            r_ *= a
-            c_ *= a
-            return int(round(r_)), int(round(c_))
-        except ZeroDivisionError:
-            return 0, 0
 
 
     def zoom(self):
-        return np.copy(self.clean_matrix[self.min_r : self.max_r + 1, self.min_c : self.max_c + 1])
+        return np.copy(self.rotated_matrix[self.min_r_rotate : self.max_r_rotate + 1, self.min_c_rotate : self.max_c_rotate + 1])
 
     def center_matrix(self):
         r,c = self.center
         big_r, big_c = self.rows/2, self.cols/2
         y_dist = int(big_r - r)
         x_dist = int(big_c - c)
-        if math.sqrt(big_r**2*big_c**2)-math.sqrt(r**2 * c**2) < (self.rows*self.cols)/10.:
-            return self.clean_matrix.astype(int)
+        if math.sqrt(big_r**2*big_c**2)-math.sqrt(r**2 * c**2) < (self.rows*self.cols)/20.:
+            return self.clean_matrix
         centered_matrix = np.zeros([self.rows, self.cols])
         for row,col in self.obj:
             centered_matrix[row+y_dist, col+x_dist] = 1
         return centered_matrix.astype(int)
 
+    def centered_tuples(self):
+        r, c = self.center
+        big_r, big_c = self.rows / 2, self.cols / 2
+        if math.sqrt(big_r ** 2 * big_c ** 2) - math.sqrt(r ** 2 * c ** 2) < (self.rows * self.cols) / 20.:
+            return self.obj
+        y_dist = int(big_r - r)
+        x_dist = int(big_c - c)
+        centered_tuples = []
+        for row,col in self.obj:
+            centered_tuple = row+y_dist, col+x_dist
+            centered_tuples.append(centered_tuple)
+        return centered_tuples
+
 
     def scale_matrix_(self):
         zoomed_img = self.zoom()
+        self.zoomed_matrix = np.copy(zoomed_img)
+        # for line in self.clean_matrix:
+        #     print ' '.join(map(str,line))
+        # for line in zoomed_img:
+        #     print ' '.join(map(str,line))
         prev_zoom = zoomed_img
         while zoomed_img.shape[0] < self.rows and zoomed_img.shape[1] < self.cols:
                 prev_zoom = zoomed_img
@@ -929,7 +939,7 @@ class Shape(object):
 
     def pad_scaled_matrix(self):
         canvas = np.zeros((self.rows, self.cols)).astype(int)
-        scaled_matrix = self.rotated_matrix
+        scaled_matrix= self.scale_matrix_()
         y_diff = int((self.rows - scaled_matrix.shape[0])/2)
         x_diff = int((self.cols - scaled_matrix.shape[1])/2)
         for r in range(scaled_matrix.shape[0]):
@@ -942,51 +952,54 @@ class Shape(object):
         return a.astype(int)
 
     def axis_of_least_movement(self):
-        a, b, c = 0.0, 0.0, 0.0
+        a = 0.0
+        b = 0.0
+        c = 0.0
         img = self.centered_matrix
-        r_ , c_ = self.center
+        r_, c_ = self.center
         for r in range(self.rows):
             for c in range(self.cols):
-                a += (r - r_) * (c - c_) * img[r][c]
-                b += (r - r_) ** 2 * img[r][c]
-                c += (c - c_) ** 2 * img[r][c]
+                a += (r - r_) * (c - c_) * img[r,c]
+                b += (r - r_) ** 2 * img[r,c]
+                c += (c - c_) ** 2 * img[r,c]
         out = 2. * a / (b - c)
         return 0.5 * math.atan(out)
 
     def rotate(self):
         return ndimage.rotate(self.centered_matrix, -math.degrees(self.theta), reshape = False).astype(int)
 
-    def size_to_area_ratio(self):
+    def area_to_size_ratio(self):
         try:
-            return self.area_f*1./self.size
+            return self.area_scale*1./self.size_scale
+        except ZeroDivisionError:
+            return 1
+
+    def area_to_size_ratio_clean(self):
+        try:
+            return self.area_clean*1./self.size_scale
         except ZeroDivisionError:
             return 1
 
     def height_to_width_ratio(self):
         try:
-            #print self.max_r,self.min_r,self.max_c,self.min_c
-            height = self.max_r-self.min_r
-            width = self.max_c - self.min_c
-            #print "HEIGHT TO WIDTH",height,width
-            return height*1./width
+            return self.height_scale*1./self.width_scale
         except ZeroDivisionError:
             return 1
 
-    def hamming_distance_prescale(self, arr2):#ARE THEY COMING FROM THE SAME LOCATION?
-        img = self.clean_matrix
+    def hamming_distance(self, img, arr2):
         shared = 0.0
         for r in range(self.rows):
             for c in range(self.cols):
                 if img[r][c] == arr2[r][c]:
                     shared += 1
-        print "tets",shared, self.size
-        return shared/(self.rows*self.cols)
+        return shared/self.size_clean
 
-    def hamming_distance_postscale(self, arr2):
-        img = self.scaled_matrix
-        shared = 0.0
-        for r in range(self.rows):
-            for c in range(self.cols):
-                if img[r][c] == arr2[r][c]:
-                    shared += 1
-        return shared/(self.rows*self.cols)
+
+    def rotated_tuples(self):
+        rotated_coords = []
+        for rows in range(self.rows):
+            for cols in range(self.cols):
+                if self.rotated_matrix[rows,cols] == 1:
+                    coord = rows,cols
+                    rotated_coords.append(coord)
+        return rotated_coords
