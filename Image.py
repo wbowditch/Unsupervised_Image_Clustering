@@ -637,6 +637,42 @@ class Shape(object):
         group = self.obj
         return round(sum([p[0]*1. for p in group])/len(group)), round(sum([p[1]*1. for p in group])/len(group))
 
+    def hollowObject(self): # returns number of hollow objects
+        numhollow = 0
+        state = 0
+        objects = self.objects
+        for object in objects:
+            for x in range(object.min_r, object.max_r+1):
+                for y in range(object.min_c,object.max_c+1):
+                    if (x,y) in object.objs: # Found a 1
+                        if state == 0:
+                            state = 1
+                            continue
+                        elif state == 1:
+                            continue
+                        elif state == 2:
+                            state = 3
+                            numhollow += 1
+                    else: # Found a 0
+                        if state == 0:
+                            continue
+                        elif state == 1:
+                            state = 2
+                            continue
+                        elif state == 2:
+                            continue
+                if state == 1:  # EOL, not hollow
+                    state = 0
+                if state == 2: # EOL, not hollow
+                    state = 0
+        return numhollow
+
+
+
+
+
+
+
     
 
 
