@@ -203,7 +203,7 @@ class Image(object):
                      ):  # return k closets neighbors
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
         score = {image: 0 for image in database_images}
-
+        rows,cols = self.original_matrix.shape
         for image in database_images:
             points = 0
             if(self.empty):
@@ -212,21 +212,15 @@ class Image(object):
                 score[image] = points
                 continue
 
-            if abs(self.area_ - image.area_) < area_sigma:
-                points += 2
+            if abs(self.area_ - image.area_) > (rows*cols)*.05:
+                points += 1
             else:
                 points -= 1
-            # print dir(image)
-            # print image.shapes
-            # print image.file_name
+
             if not image.shapes:
-                print image.file_name
-                print image.area_
-                for row in image.original_matrix:
-                    print row
-                print
-                print
-            if abs(len(self.shapes) - len(image.shapes))< shape_count:
+                continue
+
+            if abs(len(self.shapes) - len(image.shapes)) > 0:
                 points +=2
             else:
                 points -= 1
@@ -699,6 +693,7 @@ class Shape(object):
         self.obj = obj
         self.rows, self.cols = shape
         self.area_clean = len(obj)
+        self.area_to_matrix = float(self.area_clean)/(self.rows*self.cols)
         self.center = self.centerCoordinates(self.obj)
         self.max_r,self.min_r,self.max_c,self.min_c = self.getSize(self.obj)
         self.height_clean = self.max_r - self.min_r
@@ -772,11 +767,11 @@ class Shape(object):
 
 
     def shape_cornerDetector(self):
-        matrix = self.clean_matrix
+        matrix = self.scaled_matrix
         corners = []
         for r,c in self.obj:
             neighbors = [matrix[rn][cn] for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
-            if neighbors.count(0)>4:
+            if neighbors.count(0)>=4:
                 corners.append((r,c))
         return corners
 
@@ -861,17 +856,49 @@ class Shape(object):
 
     def buildPocketsv2(self): #new version of build pockets
         corners = self.shape_corners  #get dem corners, there could be 8000
+        euclideanDistance = lambda a, b: math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
         if corners:
             corner_nw, corner_ne, corner_sw, corner_se = corners[0],corners[0],corners[0],corners[0]
-            for r,c in corners:
-                if r<corner_nw[0] and c<corner_nw[1]:
-                    corner_nw = r,c
-                if r<corner_ne[0] and c>corner_ne[1]:
-                    corner_ne = r,c
-                if r>corner_sw[0] and c<corner_sw[1]:
-                    corner_sw = r,c
-                if r>corner_se[0] and c>corner_se[1]:
-                    corner_se = r,c
+            n,e,s,w = corners[0],corners[0],corners[0],corners[0]
+            nw_distance,ne_distance,sw_distance,se_distance = 0,0,0,0
+            n_distance, e_distance, s_distance, w_distance = 0, 0, 0, 0
+            for v in corners:
+                if euclideanDistance((self.rows-1,self.cols-1),v) > nw_distance:
+                    nw_distance = euclideanDistance((self.rows-1,self.cols-1),v)
+                    corner_nw = v
+                if euclideanDistance((self.rows - 1, 0), v) > ne_distance:
+                    ne_distance = euclideanDistance((self.rows - 1, 0), v)
+                    corner_ne = v
+                if euclideanDistance((0, self.cols-1), v) > sw_distance:
+                    sw_distance = euclideanDistance((0,self.cols-1), v)
+                    corner_sw = v
+                if euclideanDistance((0, 0), v) > se_distance:
+                    se_distance = euclideanDistance((0, 0), v)
+                    corner_se = v
+                #old corners
+                # if euclideanDistance((0, self.cols/2), v) > s_distance:
+                #     s_distance = euclideanDistance((0,0), v)
+                #     s = v
+                # if euclideanDistance((self.rows - 1, self.cols/2), v) > n_distance:
+                #     n_distance = euclideanDistance((self.rows - 1, self.cols - 1), v)
+                #     n = v
+                # if euclideanDistance((self.rows/2, 0), v) > e_distance:
+                #     e_distance = euclideanDistance((self.rows - 1, 0), v)
+                #     e = v
+                # if euclideanDistance((self.rows/2, self.cols - 1), v) > w_distance:
+                #     w_distance = euclideanDistance((0, self.cols - 1), v)
+                #     w = v
+
+
+
+                # if r<=corner_nw[0] and c<=corner_nw[1]:
+                #     corner_nw = r,c
+                # if r<=corner_ne[0] and c>=corner_ne[1]:
+                #     corner_ne = r,c
+                # if r>=corner_sw[0] and c<=corner_sw[1]:
+                #     corner_sw = r,c
+                # if r>=corner_se[0] and c>=corner_se[1]:
+                #     corner_se = r,c
             return [corner_nw,corner_ne,corner_sw,corner_se]
         return []
 
@@ -880,9 +907,38 @@ class Shape(object):
         corners = self.shape_grouped_corners
         img = self.scaled_matrix
         neighborhoods = []
+        neighborhood_r = int(self.rows*0.1/2)
+        neighborhood_c = int(self.cols*0.1/2)
+        print neighborhood_c
+        for r,c in corners:
+            neighborhood = np.zeros((neighborhood_r*2+1,neighborhood_c*2+1)).astype(int)
+            neighborhood_coords = [(a, b) for a in range(r - neighborhood_r, r + neighborhood_r + 1) for b in
+                            range(c - neighborhood_c, c + neighborhood_c + 1)]
+            i = 0
+            for r1 in range(neighborhood.shape[0]):
+                for c1 in range(neighborhood.shape[1]):
+                    if neighborhood_coords[i][0] >0 and neighborhood_coords[i][0] < self.rows and neighborhood_coords[i][1] > 0 and neighborhood_coords[i][1]<self.cols:
+                        neighborhood[r1][c1] = img[neighborhood_coords[i][0]][neighborhood_coords[i][1]]
+                    i+=1
+
+
+
+
+            neighborhoods.append(neighborhood)
+        return neighborhoods
+
+
+
+    def cornerNeighborhoodv2(self):
+        corners = self.shape_grouped_corners
+        img = self.scaled_matrix
+        neighborhoods = []
+        neighborhood_r = int(self.rows*0.1/2)
+        neighborhood_c = int(self.cols*0.1/2)
+        print neighborhood_c
         for r,c in corners:
             try:
-                neighborhood = np.array([img[a][b] for a in range(r-2,r+3) for b in range(c-2,c+3)]).reshape((5,5))
+                neighborhood = [(a,b) for a in range(r-neighborhood_r,r+neighborhood_r+1) for b in range(c-neighborhood_c,c+neighborhood_c+1)]
             except IndexError:
                 continue
             neighborhoods.append(neighborhood)

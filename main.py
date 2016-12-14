@@ -65,24 +65,65 @@ def main(argv):
     #         print ' '.join(map(str, line))
 
     #Decision tree - actual answer
+    theta = []
+    area_clean = []
+    height_to_width = []
+    area_to_size = []
+    area_to_matrix = []
+    corner_count = [] #number of corners before grouping
+    # avg_nw = []
+    # avg_ne = []
+    # avg_sw = []
+    # avg_se = []
+
     for image in database:
         shape = image.shapes[0]
         #corners2 = shape.shape_corners
         print image.file_name
         #print image.original_matrix
-        print shape.clean_matrix.sum()
-        print shape.scaled_matrix.sum()
-        print "size",shape.size_scale
-        print "area", shape.area_scale
+        theta.append(shape.theta)
+        area_clean.append(shape.area_clean)
+        height_to_width.append(shape.height_to_width)
+        area_to_size.append(shape.area_to_size)
+        corner_count.append(len(shape.shape_corners))
+        area_to_matrix.append(shape.area_to_matrix)
+       # groups = shape.shape_grouped_corners
+        # avg_nw.append(groups[0])
+        # avg_ne.append(groups[1])
+        # avg_sw.append(groups[2])
+        # avg_se.append(groups[3])
 
-        print "area/size",shape.area_to_size
-        print "height/width",shape.height_to_width_ratio() #height / width
-        file = open("compare/outputs/"+image.file_name,'w')
-        for row in shape.zoomed_matrix:
-            line1 = [str(int(x)) for x in row]
-            line = ' '.join(line1)
-            file.write(line + '\n')
-        file.close()
+    print "Theta Average", float(sum(theta))/len(theta)
+    print "Area Clean Average", float(sum(area_clean))/len(area_clean)
+    print "Height Width Average", float(sum(height_to_width))/len(height_to_width)
+    print "Area to Size Average", float(sum(area_to_size))/len(height_to_width)
+    print "Corner Count Average", float(sum(corner_count))/len(corner_count)
+    print "Area to Matrix Average",float(sum(area_to_matrix))/len(area_to_matrix)
+
+
+
+
+        # print "area/size",shape.area_to_size
+        # print "height/width",shape.height_to_width_ratio() #height / width
+        # file = open("compare/outputs/"+image.file_name,'w')
+        # print shape.shape_corners
+        # good_corners = shape.corner_neighborhood
+        # #print "good stuff", len(good_corners),shape.scaled_matrix.sum()
+        # text_matrix = shape.scaled_matrix
+        # print good_corners
+        # good_corners = shape.cornerNeighborhoodv2()
+        # for neighborhood in good_corners:
+        #     for r,c in neighborhood:
+        #         try:
+        #             text_matrix[r][c] = 5
+        #         except IndexError:
+        #             "corner skipped"
+        #
+        # for row in text_matrix:
+        #     line1 = [str(int(x)) for x in row]
+        #     line = ' '.join(line1)
+        #     file.write(line + '\n')
+        # file.close()
         #print shape.scaled_matrix
         #for rc, in shape.scaled_matrix
 
