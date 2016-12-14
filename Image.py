@@ -586,12 +586,26 @@ class Shape(object):
 
         self.rotated_matrix = self.rotate()
 
+        self.rotated_obj = self.rotated_tuples()
+
+        self.max_r_rotate,self.min_r_rotate,self.max_c_rotate,self.min_c_rotate = self.getSize(self.rotated_obj)
 
         self.scaled_matrix = self.pad_scaled_matrix()
 
-        # print "scaled matrix"
-        # for line in self.scaled_matrix:
-        #     print ' '.join(map(str,line))
+        self.obj = self.findObjects()
+
+        #self.scaled_matrix = self.scaleMatrix()
+        self.area_scale = len(obj)
+        #self.max_r_rotate_scale, self.min_r_rotate_scale,self.max_c_rotate_scale,self.min_c_rotate_scale = self.getSize(self.obj)
+
+        self.height_scale = self.max_r_rotate-self.min_r_rotate # height after rotation, before scale
+        self.width_scale = self.max_c_rotate - self.min_c_rotate #width after rotation, before scale
+
+        self.size_scale = self.height_scale * self.width_scale  #THESE ARE ALL
+
+        self.height_to_width = self.height_to_width_ratio()
+
+        self.area_to_size = self.area_to_size_ratio()
 
         self.shape_corners = self.shape_cornerDetector()
 
@@ -673,10 +687,88 @@ class Shape(object):
         return pockets_averaged
 
 
+    def buildPocketsv2(self): #new version of build pockets
+        corners = self.shape_corners  #get dem corners, there could be 8000
+        euclideanDistance = lambda a, b: math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+        if corners:
+            corner_nw, corner_ne, corner_sw, corner_se = corners[0],corners[0],corners[0],corners[0]
+            n,e,s,w = corners[0],corners[0],corners[0],corners[0]
+            nw_distance,ne_distance,sw_distance,se_distance = 0,0,0,0
+            n_distance, e_distance, s_distance, w_distance = 0, 0, 0, 0
+            for v in corners:
+                if euclideanDistance((self.rows-1,self.cols-1),v) > nw_distance:
+                    nw_distance = euclideanDistance((self.rows-1,self.cols-1),v)
+                    corner_nw = v
+                if euclideanDistance((self.rows - 1, 0), v) > ne_distance:
+                    ne_distance = euclideanDistance((self.rows - 1, 0), v)
+                    corner_ne = v
+                if euclideanDistance((0, self.cols-1), v) > sw_distance:
+                    sw_distance = euclideanDistance((0,self.cols-1), v)
+                    corner_sw = v
+                if euclideanDistance((0, 0), v) > se_distance:
+                    se_distance = euclideanDistance((0, 0), v)
+                    corner_se = v
+                #old corners
+                # if euclideanDistance((0, self.cols/2), v) > s_distance:
+                #     s_distance = euclideanDistance((0,0), v)
+                #     s = v
+                # if euclideanDistance((self.rows - 1, self.cols/2), v) > n_distance:
+                #     n_distance = euclideanDistance((self.rows - 1, self.cols - 1), v)
+                #     n = v
+                # if euclideanDistance((self.rows/2, 0), v) > e_distance:
+                #     e_distance = euclideanDistance((self.rows - 1, 0), v)
+                #     e = v
+                # if euclideanDistance((self.rows/2, self.cols - 1), v) > w_distance:
+                #     w_distance = euclideanDistance((0, self.cols - 1), v)
+                #     w = v
+
+
+
+                # if r<=corner_nw[0] and c<=corner_nw[1]:
+                #     corner_nw = r,c
+                # if r<=corner_ne[0] and c>=corner_ne[1]:
+                #     corner_ne = r,c
+                # if r>=corner_sw[0] and c<=corner_sw[1]:
+                #     corner_sw = r,c
+                # if r>=corner_se[0] and c>=corner_se[1]:
+                #     corner_se = r,c
+            return [corner_nw,corner_ne,corner_sw,corner_se]
+        return []
+
+
     def cornerNeighborhood(self):
         corners = self.shape_grouped_corners
         img = self.clean_matrix
         neighborhoods = []
+        neighborhood_r = int(self.rows*0.2/2)
+        neighborhood_c = int(self.cols*0.2/2)
+        ##print neighborhood_c
+        for r,c in corners:
+            neighborhood = np.zeros((neighborhood_r*2+1,neighborhood_c*2+1)).astype(int)
+            neighborhood_coords = [(a, b) for a in range(r - neighborhood_r, r + neighborhood_r + 1) for b in
+                            range(c - neighborhood_c, c + neighborhood_c + 1)]
+            i = 0
+            for r1 in range(neighborhood.shape[0]):
+                for c1 in range(neighborhood.shape[1]):
+                    if neighborhood_coords[i][0] >0 and neighborhood_coords[i][0] < self.rows and neighborhood_coords[i][1] > 0 and neighborhood_coords[i][1]<self.cols:
+                        neighborhood[r1][c1] = img[neighborhood_coords[i][0]][neighborhood_coords[i][1]]
+                    i+=1
+
+
+
+
+            neighborhoods.append(neighborhood)
+        return neighborhoods
+
+
+
+    def cornerNeighborhoodv2(self):
+        corners = self.shape_grouped_corners
+        img = self.scaled_matrix
+        neighborhoods = []
+        neighborhood_r = int(self.rows*0.2/2)
+        neighborhood_c = int(self.cols*0.2/2)
+        ##print neighborhood_c
         for r,c in corners:
             try:
                 neighborhood = np.array([img[a][b] for a in range(r-2,r+3) for b in range(c-2,c+3)]).reshape((5,5))
@@ -710,6 +802,19 @@ class Shape(object):
         self.min_c += x_dist
         return centered_matrix.astype(int)
 
+    def centered_tuples(self):
+        r, c = self.center
+        big_r, big_c = self.rows / 2, self.cols / 2
+        if math.sqrt(big_r ** 2 * big_c ** 2) - math.sqrt(r ** 2 * c ** 2) < (self.rows * self.cols) / 20.:
+            return self.obj
+        y_dist = int(big_r - r)
+        x_dist = int(big_c - c)
+        centered_tuples = []
+        for row,col in self.obj:
+            centered_tuple = row+y_dist, col+x_dist
+            centered_tuples.append(centered_tuple)
+        return centered_tuples
+
 
     def scale_matrix_(self):
         zoomed_img = self.zoom()
@@ -728,7 +833,7 @@ class Shape(object):
         x_diff = int((self.cols - scaled_matrix.shape[1])/2)
         for r in range(scaled_matrix.shape[0]):
             for c in range(scaled_matrix.shape[1]):
-                canvas[r+y_diff,c+x_diff] = scaled_matrix[r, c]
+                canvas[r+y_diff,c+x_diff] = scaled_matrix[r,c]
         return canvas
 
     def scale(self, arr):
@@ -750,8 +855,64 @@ class Shape(object):
     def rotate(self):
         return ndimage.rotate(self.centered_matrix, -math.degrees(self.theta), reshape = False).astype(int)
 
-    def size_to_area_ratio(self):
-        return self.area_*1./self.size
+    def area_to_size_ratio(self):
+        try:
+            return self.area_scale*1./self.size_scale
+        except ZeroDivisionError:
+            return 1
+
+    def area_to_size_ratio_clean(self):
+        try:
+            return self.area_clean*1./self.size_scale
+        except ZeroDivisionError:
+            return 1
 
     def height_to_width_ratio(self):
         return self.height*1./self.width
+
+    def hamming_distance(self, img, arr2):
+        shared = 0.0
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if img[r][c] == arr2[r][c]:
+                    shared += 1
+        return shared/self.size_clean
+
+
+    def rotated_tuples(self):
+        rotated_coords = []
+        for rows in range(self.rows):
+            for cols in range(self.cols):
+                if self.rotated_matrix[rows,cols] == 1:
+                    coord = rows,cols
+                    rotated_coords.append(coord)
+        return rotated_coords
+
+    def getPerimeter(self):
+        perimeters = []
+        for r,c in self.obj:
+            adjacent = [(r+1,c),(r-1,c),(r,c-1),(r,c+1)]
+            for v in adjacent:
+                if v not in self.obj and v not in perimeters:
+                    perimeters.append(v)
+        return len(perimeters)
+
+
+    def getFeatures(self):
+        return np.array([self.orignal_area,
+                         self.area_clean,
+                         self.area_to_matrix,
+                         self.center_distance,
+                         self.theta,
+                         self.height_to_width,
+                         self.area_to_size,
+                         self.corner_nw,
+                         self.corner_ne,
+                         self.corner_sw,
+                         self.corner_se,
+                         self.neighbor1,
+                         self.neighbor2,
+                         self.neighbor3,
+                         self.neighbor4,
+                         self.shape_count
+                         ])
