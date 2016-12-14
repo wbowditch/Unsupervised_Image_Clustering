@@ -4,6 +4,8 @@ import numpy as np
 from scipy import ndimage
 import operator
 from numpy.linalg import svd
+euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+
 class Image(object):
 
     def __init__(self, file_name, rows=0, cols=0):
@@ -35,8 +37,10 @@ class Image(object):
             else:
                 self.cleaned_objects = self.objects
 
-            self.shapes = [Shape((self.rows,self.cols),obj) for obj in self.cleaned_objects]
+            self.shapes = [Shape((self.rows,self.cols),obj,self.area_,len(self.cleaned_objects)) for obj in self.cleaned_objects]
             ##print "HALLLO",len(self.shapes)
+
+
 
 
 
@@ -258,7 +262,7 @@ class Image(object):
                     else:
                         points+=(-3)
 
-                    
+
 
                     if abs(query_shape.hamming_distance(query_shape.clean_matrix,database_shape.clean_matrix)) >0.8:
                         points+=(5)
@@ -775,12 +779,17 @@ class Image(object):
 
 class Shape(object):
 
-    def __init__(self, shape,obj):
+    def __init__(self, shape,obj,original_area,shape_count):
         self.obj = obj
         self.rows, self.cols = shape
         self.area_clean = len(obj)
+        self.orignal_area = original_area
+        self.shape_count = shape_count
+        self.perimeter = self.getPerimeter()
+
         self.area_to_matrix = float(self.area_clean)/(self.rows*self.cols)
         self.center = self.centerCoordinates(self.obj)
+        self.center_distance = euclideanDistance(self.center,(0,0))
         self.max_r,self.min_r,self.max_c,self.min_c = self.getSize(self.obj)
         self.height_clean = self.max_r - self.min_r
         self.width_clean = self.max_c - self.min_c
@@ -822,11 +831,20 @@ class Shape(object):
         self.area_to_size = self.area_to_size_ratio()
 
         self.shape_corners = self.shape_cornerDetector()
+        self.corner_count = len(self.shape_corners)
         ##print "number of corners",len(self.shape_corners)
 
         self.shape_grouped_corners = self.buildPocketsv2()
+        self.corner_nw = euclideanDistance(self.shape_grouped_corners[0], (0, 0))
+        self.corner_ne = euclideanDistance(self.shape_grouped_corners[1], (0, 0))
+        self.corner_sw = euclideanDistance(self.shape_grouped_corners[2], (0, 0))
+        self.corner_se = euclideanDistance(self.shape_grouped_corners[3], (0, 0))
 
         self.corner_neighborhood = self.cornerNeighborhood()
+        self.neighbor1 = svd(self.corner_neighborhood[0],compute_uv=False)
+        self.neighbor2 = svd(self.corner_neighborhood[1], compute_uv=False)
+        self.neighbor3 = svd(self.corner_neighborhood[2], compute_uv=False)
+        self.neighbor4 = svd(self.corner_neighborhood[3], compute_uv=False)
 
     def getSize(self,obj):
 
@@ -1145,3 +1163,32 @@ class Shape(object):
                     coord = rows,cols
                     rotated_coords.append(coord)
         return rotated_coords
+
+    def getPerimeter(self):
+        perimeters = []
+        for r,c in self.obj:
+            adjacent = [(r+1,c),(r-1,c),(r,c-1),(r,c+1)]
+            for v in adjacent:
+                if v not in self.obj and v not in perimeters:
+                    perimeters.append(v)
+        return len(perimeters)
+
+
+    def getFeatures(self):
+        return np.array([self.orignal_area,
+                         self.area_clean,
+                         self.area_to_matrix,
+                         self.center_distance,
+                         self.theta,
+                         self.height_to_width,
+                         self.area_to_size,
+                         self.corner_nw,
+                         self.corner_ne,
+                         self.corner_sw,
+                         self.corner_se,
+                         self.neighbor1,
+                         self.neighbor2,
+                         self.neighbor3,
+                         self.neighbor4,
+                         self.shape_count
+                         ])
