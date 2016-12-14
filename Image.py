@@ -1,20 +1,23 @@
 #All text files will be read into this class
 import math
 import numpy as np
-from scipy import ndimage
+from scipy import ndimage,cluster
 import operator
 from numpy.linalg import svd
+from pylab import plot, show
+
 class Image(object):
 
     def __init__(self, file_name, rows=0, cols=0):
         self.file_name = file_name.split('/')[-1]
         self.original_matrix = self._create_matrix(file_name)
         self.area_ = self.area()
-
-        if self.area_==0:
+        self.shapes = []
+        if self.area_== 0:
             self.empty = True
 
         else:
+
             self.empty = False  #yay it's not blank
 
             self.invert = self.invert_or_not()
@@ -32,6 +35,7 @@ class Image(object):
                 self.cleaned_objects = self.objects
 
             self.shapes = [Shape((self.rows,self.cols),obj) for obj in self.cleaned_objects]
+            #print "HALLLO",len(self.shapes)
 
 
 
@@ -108,25 +112,121 @@ class Image(object):
                 inverted_matrix.append(1-self.original_matrix[i])
             return np.array(inverted_matrix)
 
+    # def aggregate_comparison_vals(self, database_images):
+    #     for image in database_images:
+
+    def compare(self, database_images):  # return k closets neighbors
+        euclideanDistance = lambda a, b: math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+        thetas, image_areas, h_w_diffs, s_a_diffs, clean_hamming_dists, post_hamming_dists = [], [], [], [], [], []
+        for image in database_images:
+            #print image.original_matrix
+            if (self.empty):
+                if (image.empty):  # only select other blank images
+                    print "image", image.file_name, "is empty"
+                    continue
+
+            print "Image Area", abs(self.area_ - image.area_)
+
+            print "Shape Count Difference", abs(len(self.shapes) - len(image.shapes))
+
+            #print "hollow objects Difference", abs(self.hollowObject() - image.hollowObject())
+            for query_shape in self.shapes:
+                for images in database_images:
+                    for database_shape in images.shapes:
+                        #print "Database Img: {}" .format(database_images.)
+                        # for row in database_shape.clean_matrix:
+                        #     print ' '.join(map(str,row))
+                        # for row in database_shape.scaled_matrix:
+                        #     print ' '.join(map(str,row))
+                        #print "Theta Difference: {}\tDatabase thet: {}".format( abs(query_shape.theta - database_shape.theta), database_shape.theta)
+                        thetas.append(abs(query_shape.theta - database_shape.theta))
+                        #print "Area Shape Difference: {}\tDatabase Area: {}" .format(abs(query_shape.area_clean - database_shape.area_clean), database_shape.area_clean)
+                        image_areas.append(abs(query_shape.area_clean - database_shape.area_clean))
+                        x = database_shape.height_to_width_ratio()
+                        #print "height to width diff: {}\tDatabase h/w: {}".format( abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio()),x)
+                        h_w_diffs.append(abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio()))
+                        x = database_shape.size_to_area_ratio()
+                        #print "size to area diff: {}\tDatabase s/a: {}" .format(abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio()),x)
+                        s_a_diffs.append(abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio()))
+                        #print "hamming clean: {}".format( abs(query_shape.hamming_distance(query_shape.clean_matrix, database_shape.clean_matrix)))
+                        clean_hamming_dists.append(abs(query_shape.hamming_distance(query_shape.clean_matrix, database_shape.clean_matrix)))
+                        #print "hamming scaled: {}".format( abs(query_shape.hamming_distance(query_shape.scaled_matrix, database_shape.scaled_matrix)))
+                        post_hamming_dists.append(abs(query_shape.hamming_distance(query_shape.scaled_matrix, database_shape.scaled_matrix)))
+
+            t = np.array(thetas)
+            area = np.array(image_areas)
+            h_W = np.array(h_w_diffs)
+            s_a = np.array(s_a_diffs)
+            ham = np.array(clean_hamming_dists)
+            p_ham = np.array(post_hamming_dists)
+            std_t = np.std(t)
+            std_area = np.std(area)
+            std_h_w = np.std(h_W)
+            std_ham = np.std(ham)
+            std_p_ham = np.std(p_ham)
+            std_devs = [
+                np.std(t,dtype=np.float64),
+                np.std(area,dtype=np.float64),
+                np.std(h_W,dtype=np.float64),
+                np.std(ham,dtype=np.float64),
+                np.std(p_ham,dtype=np.float64)
+            ]
+            means = [
+                np.mean(t, dtype=np.float64),
+                np.mean(area, dtype=np.float64),
+                np.mean(h_W, dtype=np.float64),
+                np.mean(ham, dtype=np.float64),
+                np.mean(p_ham, dtype=np.float64)
+            ]
+            return std_devs, means
+                    # neighborhoods1 = query_shape.corner_neighborhood
+                    # neighborhoods2 = database_shape.corner_neighborhood
+                    # count = 0
+                    # for neighborhood1 in neighborhoods1:
+                    #     U1 = svd(neighborhood1, compute_uv=False)
+                    #     for neighborhood2 in neighborhoods2:
+                    #
+                    #         U2 = svd(neighborhood2, compute_uv=False)
+                    #         diff = abs(sum(U1 - U2))
+                    #         print neighborhood1
+                    #         print neighborhood2
+                    #         print diff
+                    #         print
+                    #         print
+                    #         if diff == 0:
+                    #             count += 1
+                    # print "Neighbors in common:", count
+                    #
+                    # corners1 = query_shape.shape_grouped_corners
+                    # corners2 = database_shape.shape_grouped_corners
+                    # count = 0
+                    # corner_min = 100000000
+                    # for v1 in corners1:
+                    #     for v2 in corners2:
+                    #         if abs(euclideanDistance(v1, v2)) < corner_min:
+                    #             corner_min = abs(euclideanDistance(v1, v2))
+                    # print "min corner", corner_min
+                    # print "Corners:",count
 
 
     def decisionTree(self, database_images,k=9,
                      area_sigma=30,
-                     b_area_sigma=30,
                      center_diff_sigma=5,
                      rads_sigma=0.01,
                      scale_cols_sigma=1,
                      scale_rows_sigma=1,
-                     hamming_simga1=.8,
-                     hamming_simga2=.85,
-                     hamming_simga3=.9,
-                     hamming_simga4=.9,
                      shape_count = 0,
+                     h_w_ratio=0.1,
+                     s_a_ratio=0.1,
+                     corners_sigma = 10
+
+
                      ):  # return k closets neighbors
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
         score = {image: 0 for image in database_images}
 
         for image in database_images:
+            print "query image: {}\tdatabase image: {}" .format( self.file_name, image.file_name )
             points = 0
             if(self.empty):
                 if(image.empty):  #only select other blank images
@@ -138,52 +238,71 @@ class Image(object):
                 points += 2
             else:
                 points -= 1
-
-            if abs(len(self.shapes) - len(image.shapes))< shape_count:
+            # print dir(image)
+            # print image.shapes
+            # print image.file_name
+            if not image.shapes:
+                print"no shapes"
+                print image.file_name
+                print image.area_
+                for row in image.original_matrix:
+                    print row
+                print
+                print
+            if abs(len(self.shapes) - len(image.shapes)) < shape_count:
                 points +=2
             else:
                 points -= 1
-            
 
-            if abs(self.b_radians - image.b_radians) == rads_sigma:
-                points += 2
-            else:
-                points -= 1
+            for query_shape in self.shapes:
+                for database_shape in image.shapes:
 
-            if abs(self.scale_cols - image.scale_cols) < scale_cols_sigma:
-                points += 2
-            else:
-                points -= 1
+                    print "query shape theta: {}\tdatabase image theta: {}" .format(query_shape.theta, database_shape.theta)
 
-            if abs(self.scale_rows - image.scale_rows) < scale_rows_sigma:
-                points += 2
-            else:
-                points -= 1
-
-            if self.hamming_distance4(image.r_s_z_b_c_matrix) > hamming_simga1:
-                points += 2
-            else:
-                points -= 1
-
-            if self.hamming_distance4(image.r_s_z_b_c_matrix) > hamming_simga2:
-                points += 2
-            else:
-                points -= 1
-
-            if self.hamming_distance4(image.r_s_z_b_c_matrix) > hamming_simga3:
-                points += 3
-
-            if self.hamming_distance4(image.r_s_z_b_c_matrix) > hamming_simga4:
-                points += 4
-            c = 0
-            for neighborhood1 in self.neighborhoods:
-                U1 = svd(neighborhood1,compute_uv=False)
-                for neighborhood2 in image.neighborhoods:
-                    U2 = svd(neighborhood2,compute_uv=False)
-                    diff = abs(sum(U1 - U2))
-                    if diff == 0:
+                    if abs(query_shape.theta - database_shape.theta) < rads_sigma:
                         points += 2
-                        c += 1
+
+                    print "query h/w ratio: {}\tdatabase h/w ratio: {}" .format(query_shape.height_to_width_ratio(), database_shape.height_to_width_ratio())
+                    if abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio()) < h_w_ratio:
+                        points += 2
+                    else:
+                        points -= 1
+
+                    print "query s/a ratio: {}\tdatabase s/a ratio: {}" .format(query_shape.size_to_area_ratio(), database_shape.size_to_area_ratio())
+                    if abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio()) < s_a_ratio:
+                        points += 2
+                    else:
+                        points -= 1
+
+                    print "query pre-scale hamming dist: {}".format(query_shape.hamming_distance_prescale(database_shape.clean_matrix))
+                    if abs(query_shape.hamming_distance_prescale(database_shape.clean_matrix)) >0.8:
+                        points += 2
+                    else:
+                        points -= 1
+
+                    print "post scale hamming dist: {}".format(query_shape.hamming_distance_prescale(database_shape.scaled_matrix))
+                    if abs(query_shape.hamming_distance_postscale(database_shape.scaled_matrix)) >0.8:
+                        points += 2
+                    else:
+                        points -= 1
+
+                    neighborhoods1 = query_shape.corner_neighborhood
+                    neighborhoods2 = database_shape.corner_neighborhood
+
+                    for neighborhood1 in neighborhoods1:
+                        U1 = svd(neighborhood1,compute_uv=False)
+                        for neighborhood2 in neighborhoods2:
+                            U2 = svd(neighborhood2,compute_uv=False)
+                            diff = abs(sum(U1 - U2))
+                            if diff == 0:
+                                points += 2
+
+                    corners1 = query_shape.shape_grouped_corners
+                    corners2 = database_shape.shape_grouped_corners
+                    for v1 in corners1:
+                        for v2 in corners2:
+                            if abs(euclideanDistance(v1,v2))< corners_sigma:
+                                points+=2
             score[image] = points
         out = []
         d = dict(sorted(score.iteritems(), key=operator.itemgetter(1), reverse=True)[:int(k)])
@@ -193,6 +312,20 @@ class Image(object):
             if key.file_name.startswith(self.file_name[:3]):
                 count += 1
         return out, count
+
+    def k_nearest_neighbors(self, database, k = 9):
+        """
+        run k_means on the query image to return the centroids of the fully processed image
+        then, run k_means on each of the database images
+        finally, run kmeans2 such that you return the 9 closest centroids to the query image
+        the labels will then correspond to the list of og_centroids and then you can match and return file names
+        """
+        for query_image in self.shapes:
+            w_query_img = cluster.vq.whiten(query_image.scaled_matrix)
+            k_clusters = cluster.vq._kmeans(w_query_img, k)
+
+        return 0
+
 
     def corner_neighborhood(self):
         corners = self.grouped_corners
@@ -557,7 +690,7 @@ class Image(object):
         objects = self.objects
         cleaned = []
         for obj in objects:
-            if len(obj)> 0.05*min(self.rows,self.cols) and len(obj)>1:
+            if len(obj)> 0.05*min(self.rows,self.cols) and len(obj)>4:
                 cleaned.append(obj)
         return cleaned
 
@@ -567,30 +700,46 @@ class Shape(object):
     def __init__(self, shape,obj):
         self.obj = obj
         self.rows, self.cols = shape
-        self.area_ = len(obj)
-        self.center = self.centerCoordinates()
-        self.max_r,self.min_r,self.max_c,self.min_c = self.getSize()
-
-        self.height = self.max_r-self.min_r
-        self.width = self.max_r - self.min_r
-        self.size = self.height * self.width
+        self.area_clean = len(obj)
+        self.center = self.centerCoordinates(self.obj)
+        self.max_r,self.min_r,self.max_c,self.min_c = self.getSize(self.obj)
+        self.height_clean = self.max_r - self.min_r
+        self.width_clean = self.max_c - self.min_c
+        self.size_clean = self.height_clean * self.width_clean
 
         self.clean_matrix = self.cleanMatrix()
-        print "clean matrix"
-        for line in self.clean_matrix:
-            print ' '.join(map(str, line))
 
         self.centered_matrix = self.center_matrix()
+        self.centered_obj = self.centered_tuples()
+
+        self.center = self.centerCoordinates(self.centered_obj)
 
         self.theta = self.axis_of_least_movement()
 
         self.rotated_matrix = self.rotate()
 
+        self.rotated_obj = self.rotated_tuples()
+
+        self.max_r_rotate,self.min_r_rotate,self.max_c_rotate,self.min_c_rotate = self.getSize(self.rotated_obj)
+        self.height_rotate = self.max_r_rotate - self.min_r_rotate
+        self.width_rotate = self.max_c - self.min_c
+
         self.scaled_matrix = self.pad_scaled_matrix()
 
-        print "scaled matrix"
-        for line in self.scaled_matrix:
-            print ' '.join(map(str,line))
+        self.obj = self.findObjects()
+
+        #self.scaled_matrix = self.scaleMatrix()
+        self.area_scale = len(obj)
+        self.max_r_scale,self.min_r_scale,self.max_c_scale,self.min_c_scale = self.getSize(self.obj)
+
+        self.height_scale = self.max_r_scale-self.min_r_scale
+        self.width_scale = self.max_r_scale - self.min_r_scale
+
+        self.size_scale = self.height_scale * self.width_scale  #THESE ARE ALL
+
+        self.height_to_width = self.height_to_width_ratio()
+
+        self.size_to_area = self.size_to_area_ratio()
 
         self.shape_corners = self.shape_cornerDetector()
 
@@ -598,8 +747,7 @@ class Shape(object):
 
         self.corner_neighborhood = self.cornerNeighborhood()
 
-    def getSize(self):
-        obj = self.obj
+    def getSize(self,obj):
 
         max_r,min_r,max_c,min_c = obj[0][0],obj[0][0],obj[0][1],obj[0][1]
 
@@ -632,6 +780,44 @@ class Shape(object):
                 corners.append((r,c))
         return corners
 
+    def objectDFS(self,matrix,v): #DFS? v = (r,c,discovered,value)??? matrix v2 has a discovered 2 object
+    #NO MATRIX CAN BE A COPY, IF 1 ITS NOT DISCOVERED, JUST CHANGE THE VALUE AFTERWARDS LOL
+        object1 = [] #
+        stack = []
+        r,c = v
+        stack.append(v) #BUT WHAT IS V???
+        while stack:
+            v = stack.pop()
+            r,c = v
+            #print stack
+            if(matrix[r][c]==1):  #means undiscovered #1 == discovered, 0 ==undiscovered
+                matrix[r][c] = 0
+                object1.append(v)
+                neighborhood = [(rn,cn) for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
+                neighborhood.remove((r,c))
+                for v1 in neighborhood:
+                    stack.append(v1)
+        #print matrix
+        return object1,matrix,len(object1) #list of all the components of the shape, along with a cleaned up matrix
+
+
+
+
+    def findObjects(self):
+        total_ones = self.scaled_matrix.sum()
+        objects = []
+        matrix = np.array(self.scaled_matrix)
+        for r in range(self.scaled_matrix.shape[0]):
+            for c in range(self.scaled_matrix.shape[1]):
+                if matrix[r][c]==1:
+                    new_object,new_matrix,ones = self.objectDFS(matrix,(r,c))
+                    total_ones = total_ones - ones
+                    matrix = new_matrix
+                    objects.append(new_object)
+                    if(total_ones<=0):
+                        return objects[0]
+        print " no object"
+        return []
 
 
     def buildPockets_recurse(self, t, corners):
@@ -643,6 +829,7 @@ class Shape(object):
         neighbors.remove((x, y))
         for z, w in neighbors:
             if (z, w) in corners:
+
                 corners.remove((z, w))
                 pocket.extend([(z, w)] + self.buildPockets_recurse((z, w), corners))
         return pocket
@@ -666,8 +853,8 @@ class Shape(object):
             pockets.append(pocket)
         pockets_averaged = []
         for group in pockets:
-            avg_x = sum([p[0] for p in group])/len(group)
-            avg_y = sum([p[1] for p in group])/len(group)
+            avg_x = int(round(sum([p[0]*1. for p in group])/len(group)))
+            avg_y = int(round(sum([p[1]*1. for p in group])/len(group)))
             pockets_averaged.append((avg_x, avg_y))
         return pockets_averaged
 
@@ -685,33 +872,45 @@ class Shape(object):
         return neighborhoods
 
 
-    def centerCoordinates(self):  # Returns estimated center of object
-        group = self.obj
-        return round(sum([p[0]*1. for p in group])/len(group)), round(sum([p[1]*1. for p in group])/len(group))
+    def centerCoordinates(self,group):  # Returns estimated center of object
+        return int(round(sum([p[0]*1. for p in group])/len(group))), int(round(sum([p[1]*1. for p in group])/len(group)))
 
 
     def zoom(self):
-        return np.copy(self.clean_matrix[self.min_r : self.max_r + 1, self.min_c : self.max_c + 1])
+        return np.copy(self.rotated_matrix[self.min_r_rotate : self.max_r_rotate + 1, self.min_c_rotate : self.max_c_rotate + 1])
 
     def center_matrix(self):
         r,c = self.center
         big_r, big_c = self.rows/2, self.cols/2
         y_dist = int(big_r - r)
         x_dist = int(big_c - c)
-        if math.sqrt(big_r**2*big_c**2)-math.sqrt(r**2 * c**2) < (self.rows*self.cols)/10.:
+        if math.sqrt(big_r**2*big_c**2)-math.sqrt(r**2 * c**2) < (self.rows*self.cols)/20.:
             return self.clean_matrix
         centered_matrix = np.zeros([self.rows, self.cols])
         for row,col in self.obj:
             centered_matrix[row+y_dist, col+x_dist] = 1
-        self.max_r += y_dist
-        self.min_r += y_dist
-        self.max_c += x_dist
-        self.min_c += x_dist
         return centered_matrix.astype(int)
+
+    def centered_tuples(self):
+        r, c = self.center
+        big_r, big_c = self.rows / 2, self.cols / 2
+        if math.sqrt(big_r ** 2 * big_c ** 2) - math.sqrt(r ** 2 * c ** 2) < (self.rows * self.cols) / 20.:
+            return self.obj
+        y_dist = int(big_r - r)
+        x_dist = int(big_c - c)
+        centered_tuples = []
+        for row,col in self.obj:
+            centered_tuple = row+y_dist, col+x_dist
+            centered_tuples.append(centered_tuple)
+        return centered_tuples
 
 
     def scale_matrix_(self):
         zoomed_img = self.zoom()
+        # for line in self.clean_matrix:
+        #     print ' '.join(map(str,line))
+        # for line in zoomed_img:
+        #     print ' '.join(map(str,line))
         prev_zoom = zoomed_img
         while zoomed_img.shape[0] < self.rows and zoomed_img.shape[1] < self.cols:
                 prev_zoom = zoomed_img
@@ -722,7 +921,7 @@ class Shape(object):
 
     def pad_scaled_matrix(self):
         canvas = np.zeros((self.rows, self.cols)).astype(int)
-        scaled_matrix = self.scale_matrix_()
+        scaled_matrix= self.scale_matrix_()
         y_diff = int((self.rows - scaled_matrix.shape[0])/2)
         x_diff = int((self.cols - scaled_matrix.shape[1])/2)
         for r in range(scaled_matrix.shape[0]):
@@ -735,14 +934,16 @@ class Shape(object):
         return a.astype(int)
 
     def axis_of_least_movement(self):
-        a, b, c = 0.0, 0.0, 0.0
+        a = 0.0
+        b = 0.0
+        c = 0.0
         img = self.centered_matrix
-        r_ , c_ = self.rows/2, self.cols/2
+        r_, c_ = self.center
         for r in range(self.rows):
             for c in range(self.cols):
-                a += (r - r_) * (c - c_) * img[r][c]
-                b += (r - r_) ** 2 * img[r][c]
-                c += (c - c_) ** 2 * img[r][c]
+                a += (r - r_) * (c - c_) * img[r,c]
+                b += (r - r_) ** 2 * img[r,c]
+                c += (c - c_) ** 2 * img[r,c]
         out = 2. * a / (b - c)
         return 0.5 * math.atan(out)
 
@@ -750,7 +951,31 @@ class Shape(object):
         return ndimage.rotate(self.centered_matrix, -math.degrees(self.theta), reshape = False).astype(int)
 
     def size_to_area_ratio(self):
-        return self.area_*1./self.size
+        try:
+            return self.area_clean*1./self.size_clean
+        except ZeroDivisionError:
+            return 1
 
     def height_to_width_ratio(self):
-        return self.height*1./self.width
+        try:
+            return self.height_rotate*1./self.width_rotate
+        except ZeroDivisionError:
+            return 1
+
+    def hamming_distance(self, img, arr2):
+        shared = 0.0
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if img[r][c] == arr2[r][c]:
+                    shared += 1
+        return shared/self.size_clean
+
+
+    def rotated_tuples(self):
+        rotated_coords = []
+        for rows in range(self.rows):
+            for cols in range(self.cols):
+                if self.rotated_matrix[rows,cols] == 1:
+                    coord = rows,cols
+                    rotated_coords.append(coord)
+        return rotated_coords
