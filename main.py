@@ -11,59 +11,78 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir("database"):
-        print file
-        x = Image("database/"+file)
-        database.append(x)
+    x = Image("multiple_shape_images/rat08.txt")
+    queries.append(x)
+
+    #x = Image("advanced_test/database/children19.txt")
+    # file = open("advanced_test/database/rat08.txt",'r')
+    # for row in file:
+    #     queries.append([int(x) for x in row.split(' ')])
+    # length = len(zip(*queries))
+    # for line in queries:
+    #     if len(line) < length:
+    #         while len(line) != length:
+    #             line.append(0)
+    #     if len(line) > length:
+    #         while len(line) != length:
+    #             del line[-1]
+    # file = open("multiple_shape_images/rat08.txt", 'w')
+    # for line in range(len(queries)):
+    #     file.write(' '.join(map(str,queries[line])))
+    #     if line != len(queries) - 1:
+    #         file.write("\n")
+    # file.close()
+    # add_image = open("advanced_test/database/children19.txt",'r')
+    # for row in add_image:
+    #     file.write(row)
+    # for file in os.listdir("advanced_test/queries"):
+    #     for row in file:
+    #         row =
+
+    # for row in range(x.original_matrix.shape[0]):
+    #     for col in range(int(x.original_matrix.shape[1]/2)):
+    #         x.original_matrix[-row, -col] = x.original_matrix[row,col]
+
+    # image = open("advanced_test/database/children18.txt", 'w')
+    # for row in range(x.original_matrix.shape[0]):
+    #     image.write(' '.join(map(str,x.original_matrix[row])))
+    #     if row != x.original_matrix.shape[0]-1:
+    #         image.write("\n")
+    # image.close()
 
 
-    # for file in os.listdir("queries"):
-    #     print file
-    #     x = Image("queries/"+file)
-    #     queries.append(x)
 
-    # for image in queries:
-    #     print "Name", image.file_name
-    #     print image.r_s_z_b_c_matrix
-    #     print "Area", image.area_
-    #     print "b_Area", image.b_area_
-    #     print "Center", image.b_center
-    #     print "Angle", image.b_radians
-    #     print "Corner Count", len(image.corners)
-    #     print "Corners Group Count", len(image.grouped_corners)
-    #     print "Corner Groups", image.grouped_corners
-    #     print
-    #
-    # for image in database:
-    #     print "Name", image.file_name
-    #     for shape in image.shapes:
-    #         print "center"
-    #         print shape.center
-    #         print "max_r: {}\tmin_r: {}\tmax_c: {}\tmin_c: {}" .format(shape.max_r, shape.min_r, shape.max_c, shape.min_c)
-    #         print "centered matrix"
-    #         for line in shape.centered_matrix:
-    #             print ' '.join(map(str, line))
-    #         print "axis of least movement: {}".format(shape.theta)
-    #         print "rotated matrix"
-    #         for line in shape.rotated_matrix:
-    #             print ' '.join(map(str, line))
-    #         print "scaled matrix"
-    #         for line in shape.scaled_matrix:
-    #             print ' '.join(map(str, line))
-    # Ryan testing
-    # for image in database:
-    #     print "File Name: " + image.file_name
-    #     print "original:"
-    #     for line in image.original_matrix:
-    #         print ' '.join(map(str, line))
-    #     print"final"
-    #     for line in image.r_s_z_b_c_matrix:
-    #         print ' '.join(map(str, line))
+    for image in queries:
+        i = 0
+        for shape in image.shapes:
+            f = open("process_steps/" + str(i) +"_" + image.file_name[:-3] + "_clean.txt", 'w')
+            for row in shape.clean_matrix:
+                f.write(' '.join(map(str, row)))
+                f.write("\n")
+            f.close()
+            f = open("process_steps/" + str(i) +"_" + image.file_name[:-3] + "_centered.txt", 'w')
+            for row in shape.centered_matrix:
+                f.write(' '.join(map(str, row)))
+                f.write("\n")
+            f.close()
+            f = open("process_steps/" + str(i) +"_" + image.file_name[:-3] + "_rotated.txt", 'w')
+            for row in shape.rotated_matrix:
+                f.write(' '.join(map(str, row)))
+                f.write("\n")
 
-    #Decision tree - actual answer
-    # for image in queries:
-    #     print "Name",image.file_name
-    #     print image.decisionTree(database)
+            f.close()
+            f = open("process_steps/" + str(i) + "_" + image.file_name[:-3] + "_zoomed.txt", 'w')
+            for row in shape.zoom():
+                f.write(' '.join(map(str, row)))
+                f.write("\n")
+            f.close()
+            f = open("process_steps/" + str(i) +"_" + image.file_name[:-3] + "_scaled.txt", 'w')
+            for row in shape.scaled_matrix:
+                f.write(' '.join(map(str, row)))
+                f.write("\n")
+            f.close()
+            i+=1
+
 
 
 if __name__ == '__main__':

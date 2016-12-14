@@ -576,9 +576,9 @@ class Shape(object):
         self.size = self.height * self.width
 
         self.clean_matrix = self.cleanMatrix()
-        print "clean matrix"
-        for line in self.clean_matrix:
-            print ' '.join(map(str, line))
+        # print "clean matrix"
+        # for line in self.clean_matrix:
+        #     print ' '.join(map(str, line))
 
         self.centered_matrix = self.center_matrix()
 
@@ -586,11 +586,12 @@ class Shape(object):
 
         self.rotated_matrix = self.rotate()
 
+
         self.scaled_matrix = self.pad_scaled_matrix()
 
-        print "scaled matrix"
-        for line in self.scaled_matrix:
-            print ' '.join(map(str,line))
+        # print "scaled matrix"
+        # for line in self.scaled_matrix:
+        #     print ' '.join(map(str,line))
 
         self.shape_corners = self.shape_cornerDetector()
 
@@ -727,7 +728,7 @@ class Shape(object):
         x_diff = int((self.cols - scaled_matrix.shape[1])/2)
         for r in range(scaled_matrix.shape[0]):
             for c in range(scaled_matrix.shape[1]):
-                canvas[r+y_diff,c+x_diff] = scaled_matrix[r,c]
+                canvas[r+y_diff,c+x_diff] = scaled_matrix[r, c]
         return canvas
 
     def scale(self, arr):
