@@ -36,8 +36,11 @@ class Image(object):
                 self.cleaned_objects = self.cleanObjects()
             else:
                 self.cleaned_objects = self.objects
+            self.cleaned_objects = sorted(self.cleaned_objects,key=len,reverse=True)
 
-            self.shapes = [Shape((self.rows,self.cols),obj,self.area_,len(self.cleaned_objects)) for obj in self.cleaned_objects]
+            self.object_count = len(self.cleaned_objects)
+
+            self.shapes = [Shape((self.rows,self.cols),obj,self.area_,self.object_count,self.file_name) for obj in self.cleaned_objects]
             ##print "HALLLO",len(self.shapes)
 
 
@@ -779,13 +782,15 @@ class Image(object):
 
 class Shape(object):
 
-    def __init__(self, shape,obj,original_area,shape_count):
+    def __init__(self, shape,obj,original_area,shape_count,name):
         self.obj = obj
         self.rows, self.cols = shape
         self.area_clean = len(obj)
         self.orignal_area = original_area
         self.shape_count = shape_count
         self.perimeter = self.getPerimeter()
+        self.perimeter_ratio =  self.perimeter*1./self.area_clean
+
 
         self.area_to_matrix = float(self.area_clean)/(self.rows*self.cols)
         self.center = self.centerCoordinates(self.obj)
@@ -796,6 +801,9 @@ class Shape(object):
         self.size_clean = self.height_clean * self.width_clean
 
         self.clean_matrix = self.cleanMatrix()
+
+
+
 
         self.centered_matrix = self.center_matrix()
         self.centered_obj = self.centered_tuples()
@@ -846,6 +854,12 @@ class Shape(object):
         self.neighbor3 = svd(self.corner_neighborhood[2], compute_uv=False)
         self.neighbor4 = svd(self.corner_neighborhood[3], compute_uv=False)
 
+        self.objsv3, self.hollows = self.findObjectsv1()
+        self.hollows = self.hollows-1
+        # if name.startswith('eight'):
+        #     print self.hollows-1
+        #     print self.scaled_matrix
+
     def getSize(self,obj):
 
         max_r,min_r,max_c,min_c = obj[0][0],obj[0][0],obj[0][1],obj[0][1]
@@ -879,7 +893,7 @@ class Shape(object):
                 corners.append((r,c))
         return corners
 
-    def objectDFS(self,matrix,v): #DFS? v = (r,c,discovered,value)??? matrix v2 has a discovered 2 object
+    def objectDFSv1(self,matrix,v): #DFS? v = (r,c,discovered,value)??? matrix v2 has a discovered 2 object
     #NO MATRIX CAN BE A COPY, IF 1 ITS NOT DISCOVERED, JUST CHANGE THE VALUE AFTERWARDS LOL
         object1 = [] #
         stack = []
@@ -890,17 +904,59 @@ class Shape(object):
             r,c = v
             ##print stack
             if(matrix[r][c]==1):  #means undiscovered #1 == discovered, 0 ==undiscovered
-                matrix[r][c] = 0
+                matrix[r][c] = -1
                 object1.append(v)
-                neighborhood = [(rn,cn) for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
-                neighborhood.remove((r,c))
+                neighborhood = [(r + i, c + j) for i in (-1, 0, 1) for j in (-1, 0, 1) if i != 0 or j != 0]
+                #neighborhood = [(rn,cn) for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
+                #neighborhood.remove((r,c))
                 for v1 in neighborhood:
-                    stack.append(v1)
+                    if v1[0] >= 0 and v1[1] >= 0 and v1[0] < self.rows and v1[1] < self.cols:
+                        stack.append(v1)
         ##print matrix
         return object1,matrix,len(object1) #list of all the components of the shape, along with a cleaned up matrix
 
+    def objectDFSv2(self,matrix,v): #DFS? v = (r,c,discovered,value)??? matrix v2 has a discovered 2 object
+    #NO MATRIX CAN BE A COPY, IF 1 ITS NOT DISCOVERED, JUST CHANGE THE VALUE AFTERWARDS LOL
+        object1 = [] #
+        stack = []
+        r,c = v
+        stack.append(v) #BUT WHAT IS V???
+        while stack:
+            v = stack.pop()
+            r,c = v
+            ##print stack
+            if(matrix[r][c]==0):  #means undiscovered #1 == discovered, 0 ==undiscovered
+                matrix[r][c] = -2
+                object1.append(v)
+                neighborhood = [(r+i,c+j) for i in (-1,0,1) for j in (-1,0,1) if i != 0 or j != 0]
+                #[(r+[(rn,cn) for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
+                #neighborhood.remove((r,c))
+                for v1 in neighborhood:
+                    if v1[0]>=0 and v1[1]>=0 and v1[0]<self.rows and v1[1]<self.cols:
+                        stack.append(v1)
+        ##print matrix
+        return object1,matrix,len(object1) #list of all the components of the shape, along with a cleaned up matrix
 
-
+    def objectDFS(self, matrix, v):  # DFS? v = (r,c,discovered,value)??? matrix v2 has a discovered 2 object
+        # NO MATRIX CAN BE A COPY, IF 1 ITS NOT DISCOVERED, JUST CHANGE THE VALUE AFTERWARDS LOL
+        object1 = []  #
+        stack = []
+        r, c = v
+        stack.append(v)  # BUT WHAT IS V???
+        while stack:
+            v = stack.pop()
+            r, c = v
+            ##print stack
+            if (matrix[r][c] == 1):  # means undiscovered #1 == discovered, 0 ==undiscovered
+                matrix[r][c] = 0
+                object1.append(v)
+                neighborhood = [(rn, cn) for rn in range(max(r - 1, 0), min(r + 2, self.rows)) for cn in
+                                range(max(0, c - 1), min(c + 2, self.cols))]
+                neighborhood.remove((r, c))
+                for v1 in neighborhood:
+                    stack.append(v1)
+        ##print matrix
+        return object1, matrix, len(object1)  # list of all the components of the shape, along with a cleaned up matrix
 
     def findObjects(self):
         total_ones = self.scaled_matrix.sum()
@@ -908,15 +964,41 @@ class Shape(object):
         matrix = np.array(self.scaled_matrix)
         for r in range(self.scaled_matrix.shape[0]):
             for c in range(self.scaled_matrix.shape[1]):
-                if matrix[r][c]==1:
-                    new_object,new_matrix,ones = self.objectDFS(matrix,(r,c))
+                if matrix[r][c] == 1:
+                    new_object, new_matrix, ones = self.objectDFS(matrix, (r, c))
                     total_ones = total_ones - ones
                     matrix = new_matrix
                     objects.append(new_object)
-                    if(total_ones<=0):
+                    if (total_ones <= 0):
                         return objects[0]
-        #print " no object"
+        # print " no object"
         return []
+
+
+
+
+    def findObjectsv1(self):
+        total_ones = self.scaled_matrix.sum()
+
+        objects = []
+        hollows= []
+        matrix = np.array(self.scaled_matrix)
+        for r in range(self.scaled_matrix.shape[0]):
+            for c in range(self.scaled_matrix.shape[1]):
+                if matrix[r][c]==1:
+                    new_object,new_matrix,ones = self.objectDFSv1(matrix,(r,c))
+                    total_ones = total_ones - ones
+                    matrix = new_matrix
+                    objects.append(new_object)
+                elif matrix[r][c]==0:
+                    new_object, new_matrix, ones = self.objectDFSv2(matrix, (r, c))
+                    total_ones = total_ones - ones
+                    matrix = new_matrix
+                    hollows.append(new_object)
+
+
+        #print " no object"
+        return objects[0],len(hollows)
 
 
     def buildPockets_recurse(self, t, corners):
@@ -1175,8 +1257,8 @@ class Shape(object):
 
 
     def getFeatures(self):
-        return np.array([self.orignal_area,
-                         self.area_clean,
+
+        features = np.array([
                          self.area_to_matrix,
                          self.center_distance,
                          self.theta,
@@ -1186,9 +1268,8 @@ class Shape(object):
                          self.corner_ne,
                          self.corner_sw,
                          self.corner_se,
-                         self.neighbor1,
-                         self.neighbor2,
-                         self.neighbor3,
-                         self.neighbor4,
-                         self.shape_count
-                         ])
+                         self.perimeter_ratio,
+                         self.hollows
+                         ],dtype='float64')
+        #print features
+        return features
