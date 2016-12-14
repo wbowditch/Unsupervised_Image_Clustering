@@ -9,13 +9,10 @@ class Image(object):
     def __init__(self, file_name, rows=0, cols=0):
         self.file_name = file_name.split('/')[-1]
         self.original_matrix = self._create_matrix(file_name)
-        print self.original_matrix.shape
         self.area_ = self.area()
-        print self.area_
         self.shapes = []
-        print "hello",self.file_name
         if self.area_==0:
-            print "its empty"
+            #print "its empty"
             self.empty = True
 
         else:
@@ -23,7 +20,7 @@ class Image(object):
             self.empty = False  #yay it's not blank
 
             self.invert = self.invert_or_not()
-            print self.invert
+            #print self.invert
             if(self.invert):
                 self.original_matrix = self.invert_matrix()
                 self.area_ = self.area()
@@ -32,14 +29,14 @@ class Image(object):
             self.size = self.rows*self.cols
 
             self.objects = self.findObjects()
-            print len(self.objects)
+            ##print len(self.objects)
             if len(self.objects) != 1:
                 self.cleaned_objects = self.cleanObjects()
             else:
                 self.cleaned_objects = self.objects
 
             self.shapes = [Shape((self.rows,self.cols),obj) for obj in self.cleaned_objects]
-            #print "HALLLO",len(self.shapes)
+            ##print "HALLLO",len(self.shapes)
 
 
 
@@ -82,7 +79,7 @@ class Image(object):
         # self.edge_groups = self.edges_neighborhood()
 
         #Check Number of Objects
-        #print len(self.objects)
+        ##print len(self.objects)
 
 
     def _create_matrix(self,name):  # Reads image from textfile into numpy array
@@ -90,7 +87,7 @@ class Image(object):
         array = []
         for line in file:
             a = [int(x) for x in line.split(" ")]
-            #print sum(a)
+            ##print sum(a)
             array.append([int(x) for x in line.split(" ")])
         return np.array(array)
 
@@ -123,37 +120,37 @@ class Image(object):
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
 
         for image in database_images:
-            print image.original_matrix
+            #print image.original_matrix
             if(self.empty):
                 if(image.empty):  #only select other blank images
                     print "image",image.file_name,"is empty"
                 continue
 
-            print "Image Area",abs(self.area_ - image.area_)
+            #print "Image Area",abs(self.area_ - image.area_)
 
-            print "Shape Count Difference",abs(len(self.shapes) - len(image.shapes))
+            #print "Shape Count Difference",abs(len(self.shapes) - len(image.shapes))
 
 
-            print "hollow objects Difference",abs(self.hollowObject() - image.hollowObject())
+            #print "hollow objects Difference",abs(self.hollowObject() - image.hollowObject())
 
             for query_shape in self.shapes:
                 for database_shape in image.shapes:
 
-                    print "Theta Difference",abs(query_shape.theta - database_shape.theta)
+                    #print "Theta Difference",abs(query_shape.theta - database_shape.theta)
 
-                    print "Area Shape Difference", abs(query_shape.area_f - database_shape.area_f)
-
-
-
-                    print "height to width diff",abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio())
+                    #print "Area Shape Difference", abs(query_shape.area_f - database_shape.area_f)
 
 
-                    print "size to area diff",abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio())
+
+                    #print "height to width diff",abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio())
 
 
-                    print "hamming clean",abs(query_shape.hamming_distance_prescale(database_shape.clean_matrix))
+                    #print "size to area diff",abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio())
 
-                    print "hamming scaled",abs(query_shape.hamming_distance_postscale(database_shape.scaled_matrix))
+
+                    #print "hamming clean",abs(query_shape.hamming_distance_prescale(database_shape.clean_matrix))
+
+                    #print "hamming scaled",abs(query_shape.hamming_distance_postscale(database_shape.scaled_matrix))
 
 
                     neighborhoods1 = query_shape.corner_neighborhood
@@ -165,14 +162,14 @@ class Image(object):
 
                             U2 = svd(neighborhood2,compute_uv=False)
                             diff = abs(sum(U1 - U2))
-                            print neighborhood1
-                            print neighborhood2
-                            print diff
-                            print
-                            print
+                            #print neighborhood1
+                            #print neighborhood2
+                            #print diff
+                            #print
+                            #print
                             if diff == 0:
                                 count+=1
-                    print "Neighbors in common:",count
+                    #print "Neighbors in common:",count
 
 
                     corners1 = query_shape.shape_grouped_corners
@@ -183,8 +180,8 @@ class Image(object):
                         for v2 in corners2:
                             if abs(euclideanDistance(v1,v2))< corner_min:
                                 corner_min = abs(euclideanDistance(v1,v2))
-                    print "min corner",corner_min
-                    #print "Corners:",count
+                    #print "min corner",corner_min
+                    ##print "Corners:",count
 
 
 
@@ -202,90 +199,179 @@ class Image(object):
 
                      ):  # return k closets neighbors
         euclideanDistance = lambda a,b: math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
-        score = {image: 0 for image in database_images}
+        score = {image: 0. for image in database_images}
         rows,cols = self.original_matrix.shape
+        area_sum = 0
+        shape_sum = 0
+        hollow_sum = 0
+        theta_sum = 0
+        h_w_sum = 0
+        a_s_sum = 0
+        ham_clean_sum =0
+        ham_scale_sum = 0
+        corner_comp_sum = 0
+        corner_dist_sum = 0
+        category_count = 0
         for image in database_images:
             points = 0
             if(self.empty):
                 if(image.empty):  #only select other blank images
-                    points+=1000
-                score[image] = points
+                    points += 10000
                 continue
 
-            if abs(self.area_ - image.area_) > (rows*cols)*.05:
-                points += 1
+            if abs(self.area_ - image.area_) <= (rows*cols)*.025:
+                points+=(20)
             else:
-                points -= 1
+                points+=(-1)
 
             if not image.shapes:
                 continue
 
-            if abs(len(self.shapes) - len(image.shapes)) > 0:
-                points +=2
+            if abs(len(self.shapes) - len(image.shapes)) == 0:
+                points+=(1) #same number of shapes
             else:
-                points -= 1
+                points+=(-20)
 
-            if abs(self.hollowObject() - image.hollowObject())>hollows:
-                points+=1
-            if image.file_name=='four34.txt':
-                a = image.shapes[0].scaled_matrix
-                for row in a:
-                    print row
-
-                print image.shapes[0].corner_neighborhood
-
+            # if abs(self.hollowObject() - image.hollowObject()) <= 0:
+            #     points+=(1)
+            #     points+=10
+            # else:
+            #     points+=(0)
+            # print score[image]
+            # print image.file_name
+            # print type(score[image])
             for query_shape in self.shapes:
                 for database_shape in image.shapes:
-
-                    if abs(query_shape.theta - database_shape.theta) == rads_sigma:
-                        points += 2
-
-                    if abs(query_shape.height_to_width_ratio() - database_shape.height_to_width_ratio()) < h_w_ratio:
-                        points += 2
+                    if abs(query_shape.theta - database_shape.theta) <= 0.03:
+                        points+=(20)
                     else:
-                        points -= 1
+                        # print type(score[image])
+                        points+=(0)
 
-                    if abs(query_shape.size_to_area_ratio() - database_shape.size_to_area_ratio()) < s_a_ratio:
-                        points += 2
+                    if abs(query_shape.height_to_width - database_shape.height_to_width) <= 0.5:
+                        points+=(3)
                     else:
-                        points -= 1
+                        points+=(-10)
 
-                    if abs(query_shape.hamming_distance_prescale(database_shape.clean_matrix)) >0.95:
-                        points += 2
+                    if abs(query_shape.area_to_size - database_shape.area_to_size) <= 0.1:
+                        points+=(5)
                     else:
-                        points -= 1
+                        points+=(-3)
 
-                    if abs(query_shape.hamming_distance_postscale(database_shape.scaled_matrix)) >0.93:
-                        points += 2
+                    
+
+                    if abs(query_shape.hamming_distance(query_shape.clean_matrix,database_shape.clean_matrix)) >0.8:
+                        points+=(5)
                     else:
-                        points -= 1
+                        points+=(-1)
+
+                    if abs(query_shape.hamming_distance(query_shape.scaled_matrix,database_shape.scaled_matrix)) >0.8:
+                        points+=(5)
+                    else:
+                        points+=(-5)
+
+                    if abs(query_shape.hamming_distance(query_shape.scaled_matrix,database_shape.scaled_matrix)) >0.85:
+                        points+=(5)
+                    else:
+                        points+=(-3)
+
+                    if abs(query_shape.hamming_distance(query_shape.scaled_matrix,database_shape.scaled_matrix)) >0.9:
+                        points+=(5)
+                    else:
+                        points+=(-2)
+
+                    if abs(query_shape.hamming_distance(query_shape.scaled_matrix,database_shape.scaled_matrix)) >0.95:
+                        points+=(20)
+                    else:
+                        points+=(-1)
+
+                    if (abs(len(query_shape.shape_corners) - len(database_shape.shape_corners))) < 10:
+                        points += 1
+                    else:
+                        points-=10
+
 
                     neighborhoods1 = query_shape.corner_neighborhood
                     neighborhoods2 = database_shape.corner_neighborhood
+                    ##print len(neighborhoods1)
+                    ##print len(neighborhoods2)
 
-                    for neighborhood1 in neighborhoods1:
+                    for neighborhood1,neighborhood2 in zip(neighborhoods1,neighborhoods2):
+                        #print neighborhood1.shape, neighborhood2.shape
                         U1 = svd(neighborhood1,compute_uv=False)
-                        for neighborhood2 in neighborhoods2:
-                            U2 = svd(neighborhood2,compute_uv=False)
+                        U2 = svd(neighborhood2,compute_uv=False)
+                        try:
                             diff = abs(sum(U1 - U2))
                             if diff == 0:
-                                points += 2
-
+                                #print diff
+                                points += 20
+                        except ValueError:
+                            print "didnt vals"
+                    # score[image].append(points)
                     corners1 = query_shape.shape_grouped_corners
                     corners2 = database_shape.shape_grouped_corners
-                    for v1 in corners1:
-                        for v2 in corners2:
-                            if abs(euclideanDistance(v1,v2))< corners_sigma:
-                                points+=2
-            score[image] = points
+                    for v1,v2 in zip(corners1,corners2):
+                        if abs(euclideanDistance(v1,v2))< math.sqrt(rows*cols)*0.05:
+                            points+=10
+                    score[image] = points
+
         out = []
+        #score_sum = {name:sum(score[name]) for name in score}
+                    # if self.file_name.startswith(image.file_name[:2]):
+                    #     category_count += 1
+                    #     if score[image][0] > 0:
+                    #         area_sum += 1
+                    #     if score[image][1] > 0:
+                    #         shape_sum += 1
+                    #     if score[image][2] > 0:
+                    #         hollow_sum += 1
+                    #     if score[image][3] > 0:
+                    #         theta_sum += 1
+                    #     if score[image][4] > 0:
+                    #         h_w_sum += 1
+                    #     if score[image][5] > 0:
+                    #         a_s_sum += 1
+                    #     if score[image][6] > 0:
+                    #         ham_clean_sum += 1
+                    #     if score[image][7] > 0:
+                    #         ham_scale_sum += 1
+                    #     if score[image][8] > 0:
+                    #         corner_comp_sum += 1
+                    #     if score[image][9] > 0:
+                    #         corner_dist_sum += 1
+
+
+        #return [area_sum, shape_sum, hollow_sum, theta_sum, h_w_sum,a_s_sum,ham_clean_sum,ham_scale_sum,corner_comp_sum,corner_dist_sum]
+
         d = dict(sorted(score.iteritems(), key=operator.itemgetter(1), reverse=True)[:int(k)])
         count = 0
         for key in d:
-            out.append(key.file_name)
             if key.file_name.startswith(self.file_name[:3]):
                 count += 1
+            out.append(key.file_name)
         return out, count
+        # count = 0
+        # d1 = {name:score[name] for name in d}
+        # #print"QUERY NAME",self.file_name
+        # for key in d1:
+        #     #print "File Name:",key.file_name
+        #     #print "val",d1[key][0]
+        #     #print "area", d1[key][1]
+        #     #print "shape", d1[key][2]
+        #     #print "hollow", d1[key][3]
+        #     #print "theta", d1[key][4]
+        #     #print "hw", d1[key][5]
+        #     #print "clean_ham", d1[key][5]
+        #     #print "scaled_ham", d1[key][6]
+        #     #print "cornercmp", d1[key][7]
+        #     #print "cornerdist", d1[key][8]
+        #     #out.append(key.file_name)
+        #     #if key.file_name.startswith(self.file_name[:3]):
+        #        # count += 1
+        # #return out, count
+        # #print
+        # #print
+        # #print
 
     def corner_neighborhood(self):
         corners = self.grouped_corners
@@ -621,9 +707,9 @@ class Image(object):
                     b = points[j]
                     distances[(a, b)] = math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
             maximum = max(distances, key=distances.get)
-            print "Max distance between " + str(maximum) + "= " + str(distances[maximum])
+            #print "Max distance between " + str(maximum) + "= " + str(distances[maximum])
             minimum = min(distances, key=distances.get)
-            print "Min distance between " + str(minimum) + "= " + str(distances[minimum])
+            #print "Min distance between " + str(minimum) + "= " + str(distances[minimum])
         else:
             print "Only " + str(len(points)) + " point(s)"
 
@@ -647,7 +733,7 @@ class Image(object):
         while stack:
             v = stack.pop()
             r,c = v
-            #print stack
+            ##print stack
             if(matrix[r][c]==1):  #means undiscovered #1 == discovered, 0 ==undiscovered
                 matrix[r][c] = 0
                 object1.append(v)
@@ -655,7 +741,7 @@ class Image(object):
                 neighborhood.remove((r,c))
                 for v1 in neighborhood:
                     stack.append(v1)
-        #print matrix
+        ##print matrix
         return object1,matrix,len(object1) #list of all the components of the shape, along with a cleaned up matrix
 
 
@@ -674,7 +760,7 @@ class Image(object):
                     objects.append(new_object)
                     if(total_ones<=0):
                         return objects
-        print " no object"
+        #print " no object"
         return []
 
 
@@ -736,7 +822,7 @@ class Shape(object):
         self.area_to_size = self.area_to_size_ratio()
 
         self.shape_corners = self.shape_cornerDetector()
-        print "number of corners",len(self.shape_corners)
+        ##print "number of corners",len(self.shape_corners)
 
         self.shape_grouped_corners = self.buildPocketsv2()
 
@@ -784,7 +870,7 @@ class Shape(object):
         while stack:
             v = stack.pop()
             r,c = v
-            #print stack
+            ##print stack
             if(matrix[r][c]==1):  #means undiscovered #1 == discovered, 0 ==undiscovered
                 matrix[r][c] = 0
                 object1.append(v)
@@ -792,7 +878,7 @@ class Shape(object):
                 neighborhood.remove((r,c))
                 for v1 in neighborhood:
                     stack.append(v1)
-        #print matrix
+        ##print matrix
         return object1,matrix,len(object1) #list of all the components of the shape, along with a cleaned up matrix
 
 
@@ -811,7 +897,7 @@ class Shape(object):
                     objects.append(new_object)
                     if(total_ones<=0):
                         return objects[0]
-        print " no object"
+        #print " no object"
         return []
 
 
@@ -907,9 +993,9 @@ class Shape(object):
         corners = self.shape_grouped_corners
         img = self.scaled_matrix
         neighborhoods = []
-        neighborhood_r = int(self.rows*0.1/2)
-        neighborhood_c = int(self.cols*0.1/2)
-        print neighborhood_c
+        neighborhood_r = int(self.rows*0.2/2)
+        neighborhood_c = int(self.cols*0.2/2)
+        ##print neighborhood_c
         for r,c in corners:
             neighborhood = np.zeros((neighborhood_r*2+1,neighborhood_c*2+1)).astype(int)
             neighborhood_coords = [(a, b) for a in range(r - neighborhood_r, r + neighborhood_r + 1) for b in
@@ -933,9 +1019,9 @@ class Shape(object):
         corners = self.shape_grouped_corners
         img = self.scaled_matrix
         neighborhoods = []
-        neighborhood_r = int(self.rows*0.1/2)
-        neighborhood_c = int(self.cols*0.1/2)
-        print neighborhood_c
+        neighborhood_r = int(self.rows*0.2/2)
+        neighborhood_c = int(self.cols*0.2/2)
+        ##print neighborhood_c
         for r,c in corners:
             try:
                 neighborhood = [(a,b) for a in range(r-neighborhood_r,r+neighborhood_r+1) for b in range(c-neighborhood_c,c+neighborhood_c+1)]
@@ -982,9 +1068,9 @@ class Shape(object):
         zoomed_img = self.zoom()
         self.zoomed_matrix = np.copy(zoomed_img)
         # for line in self.clean_matrix:
-        #     print ' '.join(map(str,line))
+        #     #print ' '.join(map(str,line))
         # for line in zoomed_img:
-        #     print ' '.join(map(str,line))
+        #     #print ' '.join(map(str,line))
         prev_zoom = zoomed_img
         while zoomed_img.shape[0] < self.rows and zoomed_img.shape[1] < self.cols:
                 prev_zoom = zoomed_img

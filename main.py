@@ -11,20 +11,19 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir("compare/bones"):
+    for file in os.listdir("database"):
         if not file.startswith('.'):
             print file
-            x = Image("compare/bones/"+file)
+            x = Image("database/"+file)
             #print x.shapes[0].shape_corners
-            print "initialize",file
             database.append(x)
 
 
-    # for file in os.listdir("queries"):
-    #     if not file.startswith('.'):
-    #         print file
-    #         x = Image("queries/"+file)
-    #         queries.append(x)
+    for file in os.listdir("queries"):
+        if not file.startswith('.'):
+            print file
+            x = Image("queries/"+file)
+            queries.append(x)
 
     # for image in queries:
     #     print "Name", image.file_name
@@ -79,7 +78,7 @@ def main(argv):
     for image in database:
         shape = image.shapes[0]
         #corners2 = shape.shape_corners
-        print image.file_name
+        #print image.file_name
         #print image.original_matrix
         theta.append(shape.theta)
         area_clean.append(shape.area_clean)
@@ -93,12 +92,12 @@ def main(argv):
         # avg_sw.append(groups[2])
         # avg_se.append(groups[3])
 
-    print "Theta Average", float(sum(theta))/len(theta)
-    print "Area Clean Average", float(sum(area_clean))/len(area_clean)
-    print "Height Width Average", float(sum(height_to_width))/len(height_to_width)
-    print "Area to Size Average", float(sum(area_to_size))/len(height_to_width)
-    print "Corner Count Average", float(sum(corner_count))/len(corner_count)
-    print "Area to Matrix Average",float(sum(area_to_matrix))/len(area_to_matrix)
+    # print "Theta Average", float(sum(theta))/len(theta)
+    # print "Area Clean Average", float(sum(area_clean))/len(area_clean)
+    # print "Height Width Average", float(sum(height_to_width))/len(height_to_width)
+    # print "Area to Size Average", float(sum(area_to_size))/len(height_to_width)
+    # print "Corner Count Average", float(sum(corner_count))/len(corner_count)
+    # print "Area to Matrix Average",float(sum(area_to_matrix))/len(area_to_matrix)
 
 
 
@@ -140,11 +139,11 @@ def main(argv):
         #print shape.height_to_width_ratio()
 
     #print database[0].compare(database)
-    # for image in queries:
-    #     print "Name",image.file_name
-    #     print image.original_matrix
-    #     print image.compare(database)
-
+    freq =[0.]*10
+    for image in queries:
+        print image.file_name
+        #print "Name",image.file_name
+        print image.decisionTree(database)
 
 if __name__ == '__main__':
     main(sys.argv)
