@@ -11,10 +11,10 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir("compare/bones"):
+    for file in os.listdir("compare/eights"):
         if not file.startswith('.'):
             print file
-            x = Image("compare/bones/"+file)
+            x = Image("compare/eights/"+file)
             #print x.shapes[0].shape_corners
             print "initialize",file
             database.append(x)
@@ -75,7 +75,8 @@ def main(argv):
     # avg_ne = []
     # avg_sw = []
     # avg_se = []
-
+    hollows = []
+    count = 0
     for image in database:
         shape = image.shapes[0]
         #corners2 = shape.shape_corners
@@ -92,6 +93,10 @@ def main(argv):
         # avg_ne.append(groups[1])
         # avg_sw.append(groups[2])
         # avg_se.append(groups[3])
+        print image.hollowObject()
+        if image.hollowObject() == 2:
+            hollows.append(image.hollowObject())
+        count +=1
 
     print "Theta Average", float(sum(theta))/len(theta)
     print "Area Clean Average", float(sum(area_clean))/len(area_clean)

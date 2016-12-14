@@ -302,33 +302,48 @@ class Image(object):
 
 
     def hollowObject(self): # returns number of hollow objects
+        hollow = []
         numhollow = 0
-        state = 0
         objects = self.shapes
         for object in objects:
+            # print "Object", object
+            # print "Object obj", object.obj
+            # print "Object min_r", object.min_r
+            # print "Object max_r", object.max_r
+            # print "Object min_c", object.min_c
+            # # print "Object max_c", object.max_c
             for x in range(object.min_r, object.max_r+1):
+                state = 0
                 for y in range(object.min_c,object.max_c+1):
                     if (x,y) in object.obj: # Found a 1
-                        if state == 0:
+                        if state == 0: # 0* found 1
                             state = 1
                             continue
-                        elif state == 1:
+                        elif state == 1: # 0*1* found 1
                             continue
-                        elif state == 2:
+                        elif state == 2: # 0*1*0* found 1
                             state = 3
-                            numhollow += 1
-                    else: # Found a 0
-                        if state == 0:
+                            hollow.append(x)
                             continue
-                        elif state == 1:
+                        elif state == 3: # 0*1*0*1* found 1
+                            continue
+                    else: # Found a 0
+                        if state == 0: # 0* found 0
+                            continue
+                        elif state == 1: # 0*1* found 0
                             state = 2
                             continue
-                        elif state == 2:
+                        elif state == 2: # 0*1*0* found 0
                             continue
-                if state == 1:  # EOL, not hollow
-                    state = 0
-                if state == 2: # EOL, not hollow
-                    state = 0
+                        elif state == 3: # 0*1*0*1* found 0
+                            continue
+        # print object.centered_matrix
+        # print hollow
+        if hollow:
+            numhollow +=1
+        for x in range(0,len(hollow)-1):
+            if hollow[x]+1 != hollow[x+1]:
+                numhollow +=1
         return numhollow
 
     def edges_neighborhood(self):
