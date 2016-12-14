@@ -1,9 +1,11 @@
 #All text files will be read into this class
 import math
 import numpy as np
-from scipy import ndimage
+from scipy import ndimage,cluster
 import operator
 from numpy.linalg import svd
+from pylab import plot, show
+
 class Image(object):
 
     def __init__(self, file_name, rows=0, cols=0):
@@ -310,6 +312,20 @@ class Image(object):
             if key.file_name.startswith(self.file_name[:3]):
                 count += 1
         return out, count
+
+    def k_nearest_neighbors(self, database, k = 9):
+        """
+        run k_means on the query image to return the centroids of the fully processed image
+        then, run k_means on each of the database images
+        finally, run kmeans2 such that you return the 9 closest centroids to the query image
+        the labels will then correspond to the list of og_centroids and then you can match and return file names
+        """
+        for query_image in self.shapes:
+            w_query_img = cluster.vq.whiten(query_image.scaled_matrix)
+            k_clusters = cluster.vq._kmeans(w_query_img, k)
+
+        return 0
+
 
     def corner_neighborhood(self):
         corners = self.grouped_corners

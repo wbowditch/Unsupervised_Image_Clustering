@@ -11,17 +11,16 @@ def main(argv):
     queries = []
     os.getcwd()
 
-    for file in os.listdir("database"):
-        if not file.startswith('.'):
-            #print file
-            x = Image("database/"+file)
-            database.append(x)
+    # for file in os.listdir("database"):
+    #     if not file.startswith('.'):
+    #         #print file
+    #         x = Image("database/"+file)
+    #         database.append(x)
 
 
-    for file in os.listdir("queries"):
+    for file in os.listdir("larger_images"):
         if not file.startswith('.'):
-            #print file
-            x = Image("queries/"+file)
+            x = Image("larger_images/"+file)
             queries.append(x)
 
     # for image in queries:
@@ -69,28 +68,30 @@ def main(argv):
         print "Name:\t{}".format(image.file_name)
         print
         for shape in image.shapes:
+            f = open("process_steps/"+image.file_name[:-3]+"_cleaned.txt",'w')
             for row in shape.clean_matrix:
-                print ' '.join(map(str, row))
-            print "Coords: ({},{},{},{})".format(shape.max_r,shape.min_r,shape.max_c,shape.min_c)
-            print "height: {}\twidth: {}".format(shape.height_clean,shape.width_clean)
-            print
-            print "Centered"
+                f.write(' '.join(map(str, row)))
+                f.write("\n")
+            f.close()
+            f = open("process_steps/"+image.file_name[:-3]+"_centered.txt",'w')
             for row in shape.centered_matrix:
-                print ' '.join(map(str,row))
-            print
-            print "rotate"
+                f.write(' '.join(map(str, row)))
+                f.write("\n")
+            f.close()
+            f = open("process_steps/" + image.file_name[:-3] + "_rotated.txt", 'w')
             for row in shape.rotated_matrix:
-                print ' '.join(map(str, row))
-            print
-            print "Coords: ({},{},{},{})".format(shape.max_r_rotate, shape.min_r_rotate, shape.max_c_rotate, shape.min_c_rotate)
-            print
-            print "scaled"
-            for row in shape.scaled_matrix:
-                print ' '.join(map(str,row))
-            print "Coords: ({},{},{},{})".format(shape.max_r_scale, shape.min_r_scale, shape.max_c_scale, shape.min_c_scale)
-            print "height: {}\twidth: {}".format(shape.height_scale, shape.width_scale)
+                f.write(' '.join(map(str, row)))
+                f.write("\n")
 
-            print image.compare(database)
+            f.close()
+            f = open("process_steps/" + image.file_name[:-3] + "_rotated.txt", 'w')
+            for row in shape.scaled_matrix:
+                f.write(' '.join(map(str, row)))
+            f.close()
+            # print "Coords: ({},{},{},{})".format(shape.max_r_scale, shape.min_r_scale, shape.max_c_scale, shape.min_c_scale)
+            # print "height: {}\twidth: {}".format(shape.height_scale, shape.width_scale)
+            #
+            # print image.compare(database)
 
 
 
