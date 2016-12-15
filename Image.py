@@ -18,13 +18,38 @@ class Image(object):
         # print
 
         #BLUR Image, get area and coordinates of blurred image object
-        self.b_matrix = self.mean_average_blur()
+
+        self.shape,self.holes = self.findObjects()
+
+
+
+
+        self.b_matrix = self.cleanMatrix()
+
+
+        #self.c1,self.c2,self.c3,self.c4 = self.buildPocketsv2()
+
+        #print self.b_matrix
+        #self.b_matrix[self.c1[0]][self.c1[1]] = 5
+        #self.b_matrix[self.c2[0]][self.c2[1]] = 5
+        #self.b_matrix[self.c3[0]][self.c3[1]] = 5
+        #self.b_matrix[self.c4[0]][self.c4[1]] = 5
+
+        #print self.b_matrix
+
+
+
+
+
+
+        #self.b_matrix = self.mean_average_blur()
         self.b_area_ = self.b_area()
         self.b_center = self.b_center_of_area()
         #
         # print "BLURRED"
         # print self.b_matrix
         # print
+        self.b_matrix = self.centeredMatrix()
 
         self.b_radians = self.b_axis_of_least_second_movement()
         self.r_b_matrix = self.rotate_blurred_matrix()
@@ -65,12 +90,21 @@ class Image(object):
 
         self.neighborhoods = self.corner_neighborhood()
 
-        self.edges = self.getEdgeList()
+        #self.edges = self.getEdgeList()
 
-        self.edge_groups = self.edges_neighborhood()
+       # self.edge_groups = self.edges_neighborhood()
+
+
+    def cleanMatrix(self):
+        clean_matrix = np.zeros((self.rows,self.cols))
+        for r,c in self.shape:
+            clean_matrix[r][c] = 1
+        return clean_matrix.astype(int)
 
 
     def _create_matrix(self,name): #reads image from textfile into numpy array
+
+        return np.loadtxt(name,dtype=int)
         file = open(name,'r')
         array = []
         for line in file:
@@ -105,6 +139,11 @@ class Image(object):
             else:
                 points-=1
 
+            if abs(self.holes - image.holes) == 0:
+                points+=1
+            else:
+                points-=5*(abs(self.holes-image.holes))
+
             if abs(self.b_area_ - image.b_area_) < b_area_sigma:
                 points+=2
             else:
@@ -130,20 +169,22 @@ class Image(object):
             else:
                 points-=1
 
-            if self.hamming_distance4(image.s_z_r_b_matrix) > hamming_simga1:
+            hamming  = self.hamming_distance4(image.s_z_r_b_matrix)
+
+            if hamming > hamming_simga1:
                 points+=2
             else:
                 points-=1
 
-            if self.hamming_distance4(image.s_z_r_b_matrix) > hamming_simga2:
+            if hamming > hamming_simga2:
                 points+=2
             else:
                 points-=1
 
-            if self.hamming_distance4(image.s_z_r_b_matrix) > hamming_simga3:
+            if hamming > hamming_simga3:
                 points+=3
 
-            if self.hamming_distance4(image.s_z_r_b_matrix) > hamming_simga4:
+            if hamming > hamming_simga4:
                 points+=4
 
 
@@ -281,19 +322,8 @@ class Image(object):
 
 
     def b_center_of_area(self): #returns estimated center of object
-        img = self.b_matrix
-        #self.area_ = self.b_area
-        r_=0
-        c_=0
-        for r in range(self.rows):
-            for c in range(self.cols):
-                r_+= r*img[r][c]
-                c_+= c*img[r][c]
-        a = 1./self.b_area_
-        r_ = r_*a
-        c_ = c_*a
-
-        return int(round(r_)),int(round(c_))
+        r, c = ndimage.measurements.center_of_mass(self.b_matrix)
+        return int(round(r)),int(round(c))
 
 
 
@@ -363,6 +393,75 @@ class Image(object):
         return a.astype(int)
 
 
+    def objectDFS(self,matrix,v): #DFS? v = (r,c,discovered,value)??? matrix v2 has a discovered 2 object
+    #NO MATRIX CAN BE A COPY, IF 1 ITS NOT DISCOVERED, JUST CHANGE THE VALUE AFTERWARDS LOL
+        object1 = [] #
+        stack = []
+        r,c = v
+        stack.append(v) #BUT WHAT IS V???
+        while stack:
+            v = stack.pop()
+            r,c = v
+            ##print stack
+            if(matrix[r][c]==1):  #means undiscovered #1 == discovered, 0 ==undiscovered
+                matrix[r][c] = -2
+                object1.append(v)
+                neighborhood = [(rn,cn) for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
+                neighborhood.remove((r,c))
+                for v1 in neighborhood:
+                    stack.append(v1)
+        ##print matrix
+        return object1,matrix,len(object1)
+
+    def objectDFSv2(self,matrix,v): #DFS? v = (r,c,discovered,value)??? matrix v2 has a discovered 2 object
+    #NO MATRIX CAN BE A COPY, IF 1 ITS NOT DISCOVERED, JUST CHANGE THE VALUE AFTERWARDS LOL
+        object1 = [] #
+        stack = []
+        r,c = v
+        stack.append(v) #BUT WHAT IS V???
+        while stack:
+            v = stack.pop()
+            r,c = v
+            ##print stack
+            if(matrix[r][c]==0):  #means undiscovered #1 == discovered, 0 ==undiscovered
+                matrix[r][c] = -1
+                object1.append(v)
+                neighborhood = [(rn,cn) for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
+                neighborhood.remove((r,c))
+                for v1 in neighborhood:
+                    stack.append(v1)
+        ##print matrix
+        return object1,matrix,len(object1) #list of all the components of the shape, along with a cleaned up matrix
+
+    def findObjects(self):
+        total_ones = self.area_
+        total_zeros = self.size-self.area_
+
+        objects = []
+        holes = -1
+        matrix = np.array(self.original_matrix)
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if matrix[r][c]==1:
+                    new_object,new_matrix,ones = self.objectDFS(matrix,(r,c))
+                    total_ones = total_ones - ones
+                    matrix = new_matrix
+                    objects.append(new_object)
+                    if(total_ones<=0) and (total_zeros<=0):
+                        return max(objects,key=len),holes
+
+                if matrix[r][c]==0:
+                    neighborhood = [matrix[rn][cn] for rn in range(max(r-1, 0), min(r+2, self.rows)) for cn in range(max(0, c-1), min(c+2, self.cols))]
+                    if neighborhood.count(0)<=1:
+                        matrix[r][c] = 1
+                        continue
+                    new_object,new_matrix,zeros = self.objectDFSv2(matrix,(r,c))
+                    total_zeros = total_zeros - zeros
+                    matrix = new_matrix
+                    holes+=1
+                    if(total_ones<=0) and (total_zeros<=0):
+                        return max(objects,key=len),holes
+        return max(objects,key=len),holes
 
 
     def cornerDetector(self):
@@ -477,11 +576,65 @@ class Image(object):
         return edgelist
 
 
+    def buildPocketsv2(self): #new version of build pockets
+        corners = self.shape  #get dem corners, there could be 8000
+        euclideanDistance = lambda a, b: math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+        if corners:
+            corner_nw, corner_ne, corner_sw, corner_se = corners[0],corners[0],corners[0],corners[0]
+            n,e,s,w = corners[0],corners[0],corners[0],corners[0]
+            nw_distance,ne_distance,sw_distance,se_distance = 0,0,0,0
+            n_distance, e_distance, s_distance, w_distance = 0, 0, 0, 0
+            for v in corners:
+                if euclideanDistance((self.rows-1,self.cols-1),v) > nw_distance:
+                    nw_distance = euclideanDistance((self.rows-1,self.cols-1),v)
+                    corner_nw = v
+                if euclideanDistance((self.rows - 1, 0), v) > ne_distance:
+                    ne_distance = euclideanDistance((self.rows - 1, 0), v)
+                    corner_ne = v
+                if euclideanDistance((0, self.cols-1), v) > sw_distance:
+                    sw_distance = euclideanDistance((0,self.cols-1), v)
+                    corner_sw = v
+                if euclideanDistance((0, 0), v) > se_distance:
+                    se_distance = euclideanDistance((0, 0), v)
+                    corner_se = v
+                #old corners
+                # if euclideanDistance((0, self.cols/2), v) > s_distance:
+                #     s_distance = euclideanDistance((0,0), v)
+                #     s = v
+                # if euclideanDistance((self.rows - 1, self.cols/2), v) > n_distance:
+                #     n_distance = euclideanDistance((self.rows - 1, self.cols - 1), v)
+                #     n = v
+                # if euclideanDistance((self.rows/2, 0), v) > e_distance:
+                #     e_distance = euclideanDistance((self.rows - 1, 0), v)
+                #     e = v
+                # if euclideanDistance((self.rows/2, self.cols - 1), v) > w_distance:
+                #     w_distance = euclideanDistance((0, self.cols - 1), v)
+                #     w = v
 
 
 
+                # if r<=corner_nw[0] and c<=corner_nw[1]:
+                #     corner_nw = r,c
+                # if r<=corner_ne[0] and c>=corner_ne[1]:
+                #     corner_ne = r,c
+                # if r>=corner_sw[0] and c<=corner_sw[1]:
+                #     corner_sw = r,c
+                # if r>=corner_se[0] and c>=corner_se[1]:
+                #     corner_se = r,c
+            return (corner_nw,corner_ne,corner_sw,corner_se)
+        return []
 
-
+    def centeredMatrix(self):
+        r,c = self.b_center
+        big_r, big_c = self.rows/2, self.cols/2
+        y_dist = int(big_r - r)
+        x_dist = int(big_c - c)
+        if math.sqrt(big_r**2*big_c**2)-math.sqrt(r**2 * c**2) < (self.rows*self.cols)/20.:
+            return self.b_matrix
+        centered_matrix = np.zeros([self.rows, self.cols])
+        for row,col in self.shape:
+            centered_matrix[row+y_dist, col+x_dist] = 1
+        return centered_matrix.astype(int)
 
 
 
